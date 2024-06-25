@@ -1,0 +1,248 @@
+﻿@using Entities.ViewModels
+@model VmAcademicSemester
+@{
+    ViewData["Title"] = "Semester";
+    Layout = "_Admin_Layout";
+}
+
+<link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+<link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Academic Semesters</h1>
+        <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="AddNewSemester">
+            <i class="fas fa-plus"></i> Semester
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="semesterTable" class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Details</th>
+                            <th>CreatedBy</th>
+                            <th>CreatedOn</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="modalAddOrUpdate">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title addorupdate">Add Semester</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" autocomplete="off">
+                        <input type='hidden' name="SemesterId" id="SemesterId" value="0">
+                        <div class="form-group">
+                            <label>Semester Name</label>
+                            <input type="text" name="SemesterName" id="SemesterName" class="form-control form-padding" />
+                            <span id="spnSemesterName" class="text-danger" style="display:none;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Semester Details</label>
+                            <textarea name="SemesterDetails" id="SemesterDetails" class="form-control form-padding" rows="2"></textarea>
+                            <span id="spnSemesterDetails" class="text-danger" style="display:none;"></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    <button type="button" id="frmAddUpdateBtn" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="confirmation">
+        <div class="roleManage modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title">Do you really want to delete?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>After deleting this data, will not available in this table!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger confirmed" data-dismiss="modal">Yes, I Want</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">No, I don't</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/sweetalert/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        var id = 0;
+        var semesterTable;
+
+        $(document).ready(function () {
+            semesterTable = $('#semesterTable').DataTable({
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "pageLength": 10,
+                "ordering": false,
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "paging": true,
+                "responsive": true,
+                "ajax": {
+                    "url": "/Configuration/AjaxSemesters",
+                    "data": function (d) { }
+                },
+                "columns": [
+                    { "data": "semesterId" },//Column Number:0
+                    { "data": "semesterName" },//Column Number:1
+                    { "data": "semesterDetails" },//Column Number:2
+                    { "data": "createdBy" },//Column Number:3
+                    { "data": "creationDate" },//Column Number:4
+                    {
+                        "title": "Action",//Column Number:5
+                        "render": function (data, type, row, meta) {
+                            return '<span class="update" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit bg-edit-action"></i></span> &nbsp;<span class="delete" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt bg-delete-action"></i></span>';
+                        }
+                    }
+                ],
+                "drawCallback": function (settings) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+        });
+
+        $("#AddNewSemester").on("click", function () {
+            $('#SemesterId').val(0);
+            $("#SemesterName").val("");
+            $("#SemesterDetails").val("");
+            $(".addorupdate").html('Add Semester');
+            $("#frmAddUpdateBtn").html('Save');
+            $("#frmAddUpdateBtn").prop("disabled", false);
+            $('#modalAddOrUpdate').modal('show');
+        });
+
+        function VmSemester() {
+            var SemesterId;
+            var SemesterName;
+            var SemesterDetails;
+        }
+
+        $("#frmAddUpdateBtn").click(function () {
+            var isValid = true;
+            var semesterId = $("#SemesterId").val();
+            var semesterName = $.trim($("#SemesterName").val());
+            var semesterDetails = $.trim($("#SemesterDetails").val());
+
+            $("#spnSemesterName").hide();
+            $("#spnSemesterDetails").hide();
+
+            if (semesterName == null || semesterName == "") {
+                $("#spnSemesterName").text("Provide the semester name.");
+                $("#spnSemesterName").show();
+                isValid = false;
+            }
+            if (semesterDetails != null && semesterDetails.length > 500) {
+                $("#spnSemesterDetails").text("Semester details must be kept in between 500 characters.");
+                $("#spnSemesterDetails").show();
+                isValid = false;
+            }
+
+            if (semesterId >= 0 && isValid == true) {
+                $("#frmAddUpdateBtn").prop("disabled", true);
+                var data = new VmSemester();
+                data.SemesterId = semesterId;
+                data.SemesterName = semesterName;
+                data.SemesterDetails = semesterDetails;
+
+                $.post("/Configuration/SemesterAddEdit", { model: data }, function (data) {
+                    $("#frmAddUpdateBtn").prop("disabled", false);
+                    $('#modalAddOrUpdate').modal('hide');
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    semesterTable.ajax.reload();
+                    isValid = true;
+                });
+            }
+            return isValid;
+        });
+
+        $(function () {
+            $('#semesterTable tbody').on('click', 'span.update', function () {
+                var v = $(this).parent().parent();
+                var rowData = semesterTable.row(v).data();
+                $('#SemesterId').val(rowData.semesterId);
+                $("#SemesterName").val(rowData.semesterName);
+                $("#SemesterDetails").val(rowData.semesterDetails);
+                $(".addorupdate").html('Edit Semester');
+                $("#frmAddUpdateBtn").html('Update');
+                $('#modalAddOrUpdate').modal("show");
+            });
+        });
+
+        $(function () {
+            $('#semesterTable tbody').on('click', 'span.delete', function () {
+                $('#confirmation').modal();
+                var v = $(this).parent().parent();
+                var rowData = semesterTable.row(v).data();
+                id = parseInt(rowData.semesterId);
+            });
+        });
+
+        $(function () {
+            $('#confirmation').on('click', '.confirmed', function () {
+                $.get("/Configuration/DeleteSemester/" + id, function (data) {
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    } else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    id = 0;
+                    semesterTable.ajax.reload();
+                });
+            });
+        });
+    </script>
+}

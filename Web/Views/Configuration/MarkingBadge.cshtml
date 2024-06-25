@@ -1,0 +1,285 @@
+﻿@using Entities.ViewModels
+@model VmMarkingBadge
+@{
+    ViewData["Title"] = "Marking Badges";
+    Layout = "_Admin_Layout";
+}
+
+<link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+<link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<style type="text/css">
+    .marking-badge-name {
+        border-radius: 5px;
+        padding: 2px 2px;
+        color: #ffffff;
+    }
+</style>
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Marking Badges</h1>
+        <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="AddNewMarkingBadge">
+            <i class="fas fa-plus"></i> Marking Badge
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="markingBadgeTable" class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>ColorCode</th>
+                            <th>Details</th>
+                            <th>CreatedBy</th>
+                            <th>CreatedOn</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="modalAddOrUpdate">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title addorupdate">Add Marking Badge</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" autocomplete="off">
+                        <input type='hidden' name="MarkingBadgeId" id="MarkingBadgeId" value="0">
+                        <div class="form-group">
+                            <label>Badge Name</label>
+                            <input type="text" name="MarkingBadgeName" id="MarkingBadgeName" class="form-control form-padding" />
+                            <span id="spnMarkingBadgeName" class="text-danger" style="display:none;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Badge Color</label>
+                            <input type="color" name="MarkingBadgeColor" id="MarkingBadgeColor" value="#000000" class="form-control form-padding" />
+                            <span id="spnMarkingBadgeColor" class="text-danger" style="display:none;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Badge Details</label>
+                            <textarea name="MarkingBadgeDetails" id="MarkingBadgeDetails" class="form-control form-padding" rows="2"></textarea>
+                            <span id="spnMarkingBadgeDetails" class="text-danger" style="display:none;"></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    <button type="button" id="frmAddUpdateBtn" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="confirmation">
+        <div class="roleManage modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title">Do you really want to delete?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>After deleting this data, will not available in this table!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger confirmed" data-dismiss="modal">Yes, I Want</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">No, I don't</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/sweetalert/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        var id = 0;
+        var markingBadgeTable;
+
+        $(document).ready(function () {
+            markingBadgeTable = $('#markingBadgeTable').DataTable({
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "pageLength": 10,
+                "ordering": false,
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "paging": true,
+                "responsive": true,
+                "ajax": {
+                    "url": "/Configuration/AjaxMarkingBadges",
+                    "data": function (d) { }
+                },
+                "columns": [
+                    { "data": "markingBadgeId" },//Column Number:0
+                    {
+                        "title": "Name",//Column Number:1
+                        "render": function (data, type, row, meta) {
+                            var colorCode = row.markingBadgeColor;
+                            if (colorCode != null && colorCode != "") {
+                                return '<span class="marking-badge-name" style="border: 1px solid ' + colorCode + '; background: ' + colorCode + ';">' + row.markingBadgeName + '</span>';
+                            }
+                            else {
+                                return '<span class="marking-badge-name" style="border: 1px solid #000000;background:#000000;">' + row.markingBadgeName + '</span>';
+                            }
+                        }
+                    },
+                    { "data": "markingBadgeColor" },//Column Number:2
+                    { "data": "markingBadgeDetails" },//Column Number:3
+                    { "data": "createdBy" },//Column Number:4
+                    { "data": "creationDate" },//Column Number:5
+                    {
+                        "title": "Action",//Column Number:6
+                        "render": function (data, type, row, meta) {
+                            return '<span class="update" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit bg-edit-action"></i></span> &nbsp;<span class="delete" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt bg-delete-action"></i></span>';
+                        }
+                    }
+                ],
+                "drawCallback": function (settings) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+        });
+
+        $("#AddNewMarkingBadge").on("click", function () {
+            $('#MarkingBadgeId').val(0);
+            $("#MarkingBadgeName").val("");
+            $("#MarkingBadgeColor").val("#000000");
+            $("#MarkingBadgeDetails").val("");
+            $(".addorupdate").html('Add Marking Badge');
+            $("#frmAddUpdateBtn").html('Save');
+            $("#frmAddUpdateBtn").prop("disabled", false);
+            $('#modalAddOrUpdate').modal('show');
+        });
+
+        function VmMarkingBadge() {
+            var MarkingBadgeId;
+            var MarkingBadgeName;
+            var MarkingBadgeColor;
+            var MarkingBadgeDetails;
+        }
+
+        $("#frmAddUpdateBtn").click(function () {
+            var isValid = true;
+            var markingBadgeId = $("#MarkingBadgeId").val();
+            var markingBadgeName = $.trim($("#MarkingBadgeName").val());
+            var markingBadgeColor = $("#MarkingBadgeColor").val();
+            var markingBadgeDetails = $.trim($("#MarkingBadgeDetails").val());
+
+            $("#spnMarkingBadgeName").hide();
+            $("#spnMarkingBadgeDetails").hide();
+
+            if (markingBadgeName == null || markingBadgeName == "") {
+                $("#spnMarkingBadgeName").text("Provide the marking badge name.");
+                $("#spnMarkingBadgeName").show();
+                isValid = false;
+            }
+            else if (markingBadgeName != null && markingBadgeName != "" && markingBadgeName.length > 100) {
+                $("#spnMarkingBadgeName").text("Marking badge name must be within 100 characters.");
+                $("#spnMarkingBadgeName").show();
+                isValid = false;
+            }
+            if (markingBadgeDetails != null && markingBadgeDetails != "" && markingBadgeDetails.length > 500) {
+                $("#spnMarkingBadgeDetails").text("Marking badge details must be within 500 characters.");
+                $("#spnMarkingBadgeDetails").show();
+                isValid = false;
+            }
+
+            if (markingBadgeId >= 0 && isValid == true) {
+                $("#frmAddUpdateBtn").prop("disabled", true);
+                var data = new VmMarkingBadge();
+                data.MarkingBadgeId = markingBadgeId;
+                data.MarkingBadgeName = markingBadgeName;
+                data.MarkingBadgeColor = markingBadgeColor;
+                data.MarkingBadgeDetails = markingBadgeDetails;
+
+                $.post("/Configuration/MarkingBadgeAddEdit", { model: data }, function (data) {
+                    $("#frmAddUpdateBtn").prop("disabled", false);
+                    $('#modalAddOrUpdate').modal('hide');
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end', width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end', width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    markingBadgeTable.ajax.reload();
+                    isValid = true;
+                });
+            }
+            return isValid;
+        });
+
+        $(function () {
+            $('#markingBadgeTable tbody').on('click', 'span.update', function () {
+                var v = $(this).parent().parent();
+                var rowData = markingBadgeTable.row(v).data();
+                $('#MarkingBadgeId').val(rowData.markingBadgeId);
+                $("#MarkingBadgeName").val(rowData.markingBadgeName);
+                $("#MarkingBadgeColor").val(rowData.markingBadgeColor);
+                $("#MarkingBadgeDetails").val(rowData.markingBadgeDetails);
+                $(".addorupdate").html('Edit Marking Badge');
+                $("#frmAddUpdateBtn").html('Update');
+                $('#modalAddOrUpdate').modal("show");
+            });
+        });
+
+        $(function () {
+            $('#markingBadgeTable tbody').on('click', 'span.delete', function () {
+                $('#confirmation').modal();
+                var v = $(this).parent().parent();
+                var rowData = markingBadgeTable.row(v).data();
+                id = parseInt(rowData.markingBadgeId);
+            });
+        });
+
+        $(function () {
+            $('#confirmation').on('click', '.confirmed', function () {
+                $.get("/Configuration/DeleteMarkingBadge/" + id, function (data) {
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end', width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    } else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end', width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    id = 0;
+                    markingBadgeTable.ajax.reload();
+                });
+            });
+        });
+    </script>
+}
+
+

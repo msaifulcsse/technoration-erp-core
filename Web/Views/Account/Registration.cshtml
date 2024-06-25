@@ -1,0 +1,116 @@
+﻿@using Entities.ViewModels
+@model VmStudentRegistration
+@{
+    ViewData["Title"] = "Registration";
+    Layout = "_Login_Layout";
+}
+
+<div class="row col-sm-12">
+    <div class="col-sm-3">&nbsp;</div>
+    <div class="col-sm-6">
+        <fieldset>
+            <div class="signup-form">
+                @using (Html.BeginForm("Registration", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form", id = "frmStudentRegistration", @enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true)
+                    <h2>Student Register</h2>
+                    <p class="hint-text">Student registration, After Approval your can login.</p>
+                    <p id="SuccessNotificationMSG" class="green font-bold" style="display:none;"></p>
+                    <p id="ErrorNotificationMSG" class="red font-bold" style="display:none;"></p>
+                    <p id="spnLoginErrorTxt" class="login-error-msg-design" style="display: none; color: red;"></p>
+                    <hr>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col"><input type="text" class="form-control" name="FirstName" id="FirstName" placeholder="First Name" required="required"></div>
+                            <div class="col"><input type="text" class="form-control" name="LastName" id="LastName" placeholder="Last Name" required="required"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                <input type="email" class="form-control" name="EmailAddress" id="EmailAddress" placeholder="Email Address">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" name="ContactNumber" id="ContactNumber" placeholder="Contact Number">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check-label">Gender</label>
+                        <select class="form-control" name="Gender" id="Gender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check-label">Religion</label>
+                        <select class="form-control" name="Religion" id="Religion">
+                            <option value="Islam">Islam</option>
+                            <option value="Hindu">Hindu</option>
+                            <option value="Buddhist">Buddhist</option>
+                            <option value="Chirstian">Chirstian</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" name="NationalID" id="NationalID" placeholder="National ID">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" name="FatherName" id="FatherName" placeholder="Father Name">
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control" name="MotherName" id="MotherName" placeholder="Mother Name">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                <input type="text" class="form-control" name="GurdianContactNumber" id="GurdianContactNumber" placeholder="Gurdian Contact Number">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check-label">Present Address</label>
+                        <textarea class="form-control" name="PresentAddress" id="PresentAddress" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check-label">Permanent Address</label>
+                        <textarea class="form-control" name="PermanentAddress" id="PermanentAddress" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col">
+                                <input type="file" name="ProfilePicture" id="ProfilePicture">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check-label">
+                            @Html.CheckBoxFor(m => m.AppliedTermsAndCondition) I accept the <a href="/Home/TermsAndConditions">Terms of Use</a> &amp; <a href="/Home/PrivacyPolicy">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Register Now" class="btn btn-primary btn-lg" id="btnStudentRegistration" />
+                    </div>
+                }
+                <div class="text-center">Already have an account? <a href="/Account/Index">Sign in</a></div>
+            </div>
+        </fieldset>
+    </div>
+    <div class="col-sm-3">&nbsp;</div>
+</div>
+
+
+

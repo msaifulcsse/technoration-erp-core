@@ -1,0 +1,179 @@
+﻿@using Entities.ViewModels
+@model VmEmployeeData
+@{
+    ViewData["Title"] = "Faculty | Details";
+    Layout = "_Admin_Layout";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker.min.css" />
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Faculty Details</h1>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form action="">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">FirstName</label>
+                            <input type="text" class="form-control form-padding" asp-for="FirstName" placeholder="First Name" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">LastName</label>
+                            <input type="text" class="form-control form-padding" asp-for="LastName" placeholder="Last Name">
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Designation</label>
+                            <input type="text" class="form-control form-padding" asp-for="Designation" placeholder="Designation">
+                            <span asp-validation-for="Designation" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">Department</label>
+                            @Html.DropDownListFor(m => m.DepartmentId, new SelectList(ViewBag.Departments, "Id", "Name"), "Select", new { @class = "form-control form-padding" })
+                            <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Employee Type</label>
+                            @Html.DropDownListFor(m => m.EmployeeTypeId, new SelectList(ViewBag.EmployeeTypes, "Id", "Name"), "Select", new { @class = "form-control form-padding" })
+                            <span asp-validation-for="EmployeeTypeId" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Joining Date</label>
+                            <input type="text" class="form-control form-padding bg-gray" asp-for="JoiningDate" placeholder="Joining Date(DD/MM/YYYY)" readonly>
+                            <span asp-validation-for="JoiningDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">Registration Number</label>
+                            <input type="text" class="form-control form-padding" asp-for="RegistrationNumber" placeholder="Registration Number">
+                            <span asp-validation-for="RegistrationNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Password</label>
+                            <input type="text" class="form-control form-padding" asp-for="Password" placeholder="Enter A Password">
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Confirm Password</label>
+                            <input type="text" class="form-control form-padding" asp-for="ConfirmPassword" placeholder="Enter A Confirm Password">
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">Email Address</label>
+                            <input type="email" class="form-control form-padding" asp-for="EmailAddress" placeholder="Email Address">
+                            <span asp-validation-for="EmailAddress" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Contact Number</label>
+                            <input type="text" class="form-control form-padding" asp-for="ContactNumber" placeholder="Contact Number">
+                            <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">National ID</label>
+                            <input type="text" class="form-control form-padding" asp-for="NationalID" placeholder="National ID">
+                            <span asp-validation-for="NationalID" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">Gender</label>
+                            <select class="form-control form-padding" asp-for="Gender">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Religion</label>
+                            <select class="form-control form-padding" asp-for="Religion">
+                                <option value="Islam">Islam</option>
+                                <option value="Hindu">Hindu</option>
+                                <option value="Buddhist">Buddhist</option>
+                                <option value="Chirstian">Chirstian</option>
+                            </select>
+                            <span asp-validation-for="Religion" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">Father Name</label>
+                            <input type="text" class="form-control form-padding" asp-for="FatherName" placeholder="Father Name">
+                            <span asp-validation-for="FatherName" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Mother Name</label>
+                            <input type="text" class="form-control form-padding" asp-for="MotherName" placeholder="Mother Name">
+                            <span asp-validation-for="MotherName" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Gurdian Contact Number</label>
+                            <input type="text" class="form-control form-padding" asp-for="GurdianContactNumber" placeholder="Gurdian Contact Number">
+                            <span asp-validation-for="GurdianContactNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">Present Address</label>
+                            <textarea class="form-control form-padding" asp-for="PresentAddress" rows="2"></textarea>
+                            <span asp-validation-for="PresentAddress" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Permanent Address</label>
+                            <textarea class="form-control form-padding" asp-for="PermanentAddress" rows="2"></textarea>
+                            <span asp-validation-for="PermanentAddress" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" onclick="window.location.href='/Employee/Index'" class="btn btn-primary btn-lg">
+                                Go Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(function () {
+                $('#JoiningDate').datepicker({
+                    format: 'dd/mm/yyyy',
+                    todayHighlight: true,
+                    autoclose: true,
+                    orientation: "top left"
+                }).on('changeDate', function (e) {
+                    $('#JoiningDate input').val(e.date);
+                });
+            });
+        });
+    </script>
+}

@@ -1,0 +1,184 @@
+﻿@using Entities.ViewModels
+@model VmUserLogin
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Login_Layout";
+    var ipAddress = ViewBag.CurrentIPAddress != null ? ViewBag.CurrentIPAddress.ToString() : "";
+}
+
+<div class="row col-sm-12">
+    <div class="col-sm-3">&nbsp;</div>
+    <div class="col-sm-6">
+        <fieldset>
+            <div class="signup-form">
+                @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form", id = "frmUserLogin" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true)
+                    <!--Start: IP Information For User Login Tracer-->
+                    @Html.HiddenFor(m => m.VmAuthTracer.IPAddress, new { id = "IPAddress" })
+                    @Html.HiddenFor(m => m.VmAuthTracer.CountryName, new { id = "CountryName" })
+                    @Html.HiddenFor(m => m.VmAuthTracer.Region, new { id = "Region" })
+                    @Html.HiddenFor(m => m.VmAuthTracer.CityName, new { id = "CityName" })
+                    @Html.HiddenFor(m => m.VmAuthTracer.PostalCode, new { id = "PostalCode" })
+                    @Html.HiddenFor(m => m.VmAuthTracer.Latitude, new { id = "Latitude" })
+                    @Html.HiddenFor(m => m.VmAuthTracer.Longitude, new { id = "Longitude" })
+                    @Html.HiddenFor(m => m.VmAuthTracer.TimeZone, new { id = "TimeZone" })
+                    @Html.HiddenFor(m => m.VmAuthTracer.Organization, new { id = "Organization" })
+                    <!--End: IP Information For User Login Tracer-->
+                    <h2>User Login</h2>
+                    <p>Please provide your valid credentials!</p>
+                    <hr>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <span class="fa fa-user"></span>
+                                </span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="Username" id="Username" name="Username" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <i class="fa fa-lock"></i>
+                                </span>
+                            </div>
+                            <input type="password" class="form-control" placeholder="Password" id="Password" name="Password" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-check-label">
+                            @Html.CheckBoxFor(m => m.RememberMe) Remember Me
+                        </label>
+                    </div>
+                    <p id="spnLoginErrorTxt" class="login-error-msg-design" style="display: none; color: red;"></p>
+                    <div class="form-group">
+                        <input type="submit" value="Login" class="btn btn-primary btn-lg" id="btnSignIn" />
+                    </div>
+                }
+            </div>
+        </fieldset>
+    </div>
+    <div class="col-sm-3">&nbsp;</div>
+</div>
+@section Scripts{
+    <script type="text/javascript">
+        $("#btnSignIn").prop("disabled", true);
+
+        $(document).ready(function () {
+            $('#spnCustomLoginMSG').fadeOut(8000);
+            GetClientIPAddress();
+            try {
+                var forgeryTokenValue = $('input[name="__RequestVerificationToken"]').val();
+                if (forgeryTokenValue == null || typeof forgeryTokenValue == 'undefined') {
+                    location.reload(true);
+                } else {
+                    $("#btnSignIn").prop("disabled", false);
+                }
+            } catch (e) {
+                location.reload(true);
+            }
+            window.history.replaceState({}, document.title, "/" + "Account/Index");
+        });
+
+        function GetClientIPAddress() {
+            //Return everythings but 1k request perday free & 30k per month
+            try {
+                $("#IPAddress").val('@ipAddress');
+                var ipInfoURL = "https://ipapi.co/" + "@ipAddress" + "/json/";
+                $.getJSON(ipInfoURL, function (data) {
+                    $("#IPAddress").val(data.ip);
+                    $("#CountryName").val(data.country_name);
+                    $("#Region").val(data.region);
+                    $("#CityName").val(data.city);
+                    $("#PostalCode").val(data.postal);
+                    $("#Latitude").val(data.latitude);
+                    $("#Longitude").val(data.longitude);
+                    $("#TimeZone").val(data.timezone);
+                    $("#Organization").val(data.org);
+                });
+            } catch (ex) {
+                $("#IPAddress").val('@ipAddress');
+                console.log(ex.message);
+            }
+        }
+
+        $("#Username").keyup(function (elem) {
+            var userName = $.trim($('#Username').val());
+            if (userName != "") {
+                $("#spnLoginErrorTxt").text("");
+                $("#spnLoginErrorTxt").hide();
+            } else {
+                $("#spnLoginErrorTxt").text("Please provide your username.");
+                $("#spnLoginErrorTxt").show().fadeOut(4000);
+            }
+        });
+
+        $("#Password").keyup(function (elem) {
+            var password = $('#Password').val();
+
+            if (password != "") {
+                $("#spnLoginErrorTxt").text("");
+                $("#spnLoginErrorTxt").hide();
+            } else {
+                $("#spnLoginErrorTxt").text("Please provide your password.");
+                $("#spnLoginErrorTxt").show().fadeOut(4000);
+            }
+        });
+
+        $('#frmUserLogin').submit(function () {
+            var isValid = true;
+            var userName = $.trim($('#Username').val());
+            var password = $('#Password').val();
+
+            $("#spnLoginErrorTxt").hide();
+            $("#btnSignIn").prop("disabled", false);
+
+            if (userName == "" || userName == null) {
+                $("#spnLoginErrorTxt").text("Please provide your username.");
+                $("#spnLoginErrorTxt").show().fadeOut(4000);
+                isValid = false;
+            }
+            if (password == "" || password == null) {
+                $("#spnLoginErrorTxt").text("Please provide your password.");
+                $("#spnLoginErrorTxt").show().fadeOut(4000);
+                isValid = false;
+            }
+            if (userName == "" && password == "") {
+                $("#spnLoginErrorTxt").text("Please provide your username & password.");
+                $("#spnLoginErrorTxt").show().fadeOut(4000);
+                isValid = false;
+            }
+            if (userName != "" && password != "") {
+                $.ajax({
+                    async: false,
+                    type: "GET",
+                    url: "/Account/UserCredentialsCheck",
+                    data: { usrName: userName, usrPassword: password },
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.CHKStatus == true) {
+                            $("#spnLoginErrorTxt").text("");
+                            $("#spnLoginErrorTxt").hide();
+                            $("#btnSignIn").prop("disabled", true);
+                            isValid = true;
+                        }
+                        if (response.CHKStatus == false) {
+                            $("#spnLoginErrorTxt").text("Your username or password is invalid!");
+                            $("#spnLoginErrorTxt").show().fadeOut(6000);
+                            isValid = false;
+                        }
+                    }
+                });
+                if (!isValid)
+                    return false;
+            }
+            return isValid;
+        });
+    </script>
+}
+

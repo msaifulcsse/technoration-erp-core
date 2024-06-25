@@ -1,0 +1,325 @@
+﻿@using Entities.ViewModels
+@model VmAcademicCourse
+@{
+    ViewData["Title"] = "Academic Courses";
+    Layout = "_Admin_Layout";
+}
+
+<link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+<link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Academic Courses</h1>
+        <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="AddNewCourse">
+            <i class="fas fa-plus"></i> Course
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="courseTable" class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Department</th>
+                            <th>Semester</th>
+                            <th>Details</th>
+                            <th>CreatedBy</th>
+                            <th>CreatedOn</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="modalAddOrUpdate">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title addorupdate">Add Course</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" autocomplete="off">
+                        <input type='hidden' name="CourseId" id="CourseId" value="0">
+                        <div class="form-group">
+                            <label>Department</label>
+                            @Html.DropDownList("DepartmentId", new SelectList(ViewBag.Departments, "Id", "Name"), "Select", new { @class = "form-control form-padding", id = "CourseDepartmentId" })
+                            <span id="spnCourseDepartmentId" class="text-danger" style="display:none;"></span>
+                        </div>
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col">
+                                    <label>Semester</label>
+                                    @Html.DropDownList("SemesterId", new SelectList(ViewBag.Semesters, "Id", "Name"), "Select", new { @class = "form-control form-padding", id = "CourseSemesterId" })
+                                    <span id="spnCourseSemesterId" class="text-danger" style="display:none;"></span>
+                                </div>
+                                <div class="col">
+                                    <label>Course Code</label>
+                                    <input type="text" name="CourseCode" id="CourseCode" class="form-control form-padding" />
+                                    <span id="spnCourseCode" class="text-danger" style="display:none;"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Course Name</label>
+                            <input type="text" name="CourseName" id="CourseName" class="form-control form-padding" />
+                            <span id="spnCourseName" class="text-danger" style="display:none;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Course Details</label>
+                            <textarea name="CourseDetails" id="CourseDetails" class="form-control form-padding" rows="2"></textarea>
+                            <span id="spnCourseDetails" class="text-danger" style="display:none;"></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    <button type="button" id="frmAddUpdateBtn" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="confirmation">
+        <div class="roleManage modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title">Do you really want to delete?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>After deleting this data, will not available in this table!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger confirmed" data-dismiss="modal">Yes, I Want</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">No, I don't</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/sweetalert/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        var id = 0;
+        var courseTable;
+
+        $(document).ready(function () {
+            courseTable = $('#courseTable').DataTable({
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "pageLength": 10,
+                "ordering": false,
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "paging": true,
+                "responsive": true,
+                "ajax": {
+                    "url": "/Configuration/AjaxCourses",
+                    "data": function (d) { }
+                },
+                "columns": [
+                    { "data": "courseId" },//Column Number:0
+                    { "data": "courseName" },//Column Number:1
+                    { "data": "courseCode" },//Column Number:2
+                    { "data": "departmentName" },//Column Number:3
+                    { "data": "semesterName" },//Column Number:4
+                    { "data": "courseDetails" },//Column Number:5
+                    { "data": "createdBy" },//Column Number:6
+                    { "data": "creationDate" },//Column Number:7
+                    {
+                        "title": "Action",//Column Number:8
+                        "render": function (data, type, row, meta) {
+                            return '<span class="update" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit bg-edit-action"></i></span> &nbsp;<span class="delete" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt bg-delete-action"></i></span>';
+                        }
+                    }
+                ],
+                "drawCallback": function (settings) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+        });
+
+        $("#AddNewCourse").on("click", function () {
+            $('#CourseId').val(0);
+            $("#CourseName").val("");
+            $("#CourseCode").val("");
+            $("#CourseDepartmentId").val(null).change();
+            $("#CourseSemesterId").val(null).change();
+            $("#CourseDetails").val("");
+            $(".addorupdate").html('Add Course');
+            $("#frmAddUpdateBtn").html('Save');
+            $("#frmAddUpdateBtn").prop("disabled", false);
+            $('#modalAddOrUpdate').modal('show');
+        });
+
+        function VmCourse() {
+            var CourseId;
+            var CourseName;
+            var CourseCode;
+            var DepartmentId;
+            var SemesterId;
+            var CourseDetails;
+        }
+
+        $("#frmAddUpdateBtn").click(function () {
+            var isValid = true;
+            var courseId = $("#CourseId").val();
+            var courseName = $.trim($("#CourseName").val());
+            var courseCode = $.trim($("#CourseCode").val());
+            var courseDepartmentId = $("#CourseDepartmentId").val();
+            var courseSemesterId = $("#CourseSemesterId").val();
+            var courseDetails = $.trim($("#CourseDetails").val());
+
+            $("#spnCourseName").hide();
+            $("#spnCourseCode").hide();
+            $("#spnCourseDepartmentId").hide();
+            $("#spnCourseSemesterId").hide();
+            $("#spnCourseDetails").hide();
+
+            if (courseName == null || courseName == "") {
+                $("#spnCourseName").text("Provide the course name.");
+                $("#spnCourseName").show();
+                isValid = false;
+            }
+            else if (courseName != null && courseName != "" && courseName.length > 100) {
+                $("#spnCourseName").text("Course name must be within 100 characters.");
+                $("#spnCourseName").show();
+                isValid = false;
+            }
+            if (courseCode == null || courseCode == "") {
+                $("#spnCourseCode").text("Provide the course code.");
+                $("#spnCourseCode").show();
+                isValid = false;
+            }
+            else if (courseCode != null && courseCode != "" && courseCode.length > 50) {
+                $("#spnCourseCode").text("Course code must be within 50 characters.");
+                $("#spnCourseCode").show();
+                isValid = false;
+            }
+            if (courseDepartmentId == null || courseDepartmentId == "" || courseDepartmentId == "0") {
+                $("#spnCourseDepartmentId").text("Select a department for this course.");
+                $("#spnCourseDepartmentId").show();
+                isValid = false;
+            }
+            if (courseSemesterId == null || courseSemesterId == "" || courseSemesterId == "0") {
+                $("#spnCourseSemesterId").text("Select a semester for this course.");
+                $("#spnCourseSemesterId").show();
+                isValid = false;
+            }
+            if (courseDetails != null && courseDetails != "" && courseDetails.length > 500) {
+                $("#spnCourseDetails").text("Course details must be within 500 characters.");
+                $("#spnCourseDetails").show();
+                isValid = false;
+            }
+
+            if (courseId >= 0 && isValid == true) {
+                $("#frmAddUpdateBtn").prop("disabled", true);
+                var data = new VmCourse();
+                data.CourseId = courseId;
+                data.CourseName = courseName;
+                data.CourseCode = courseCode;
+                data.DepartmentId = courseDepartmentId;
+                data.SemesterId = courseSemesterId;
+                data.CourseDetails = courseDetails;
+
+                $.post("/Configuration/CourseAddEdit", { model: data }, function (data) {
+                    $("#frmAddUpdateBtn").prop("disabled", false);
+                    $('#modalAddOrUpdate').modal('hide');
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    courseTable.ajax.reload();
+                    isValid = true;
+                });
+            }
+            return isValid;
+        });
+
+        $(function () {
+            $('#courseTable tbody').on('click', 'span.update', function () {
+                var v = $(this).parent().parent();
+                var rowData = courseTable.row(v).data();
+                if (rowData != null) {
+                    $("#spnCourseName").hide();
+                    $("#spnCourseCode").hide();
+                    $("#spnCourseDepartmentId").hide();
+                    $("#spnCourseSemesterId").hide();
+                    $("#spnCourseDetails").hide();
+
+                    $('#CourseId').val(rowData.courseId);
+                    $("#CourseName").val(rowData.courseName);
+                    $("#CourseCode").val(rowData.courseCode);
+                    $("#CourseDepartmentId").val(rowData.departmentId).change();
+                    $("#CourseSemesterId").val(rowData.semesterId).change();
+                    $("#CourseDetails").val(rowData.courseDetails);
+                    $(".addorupdate").html('Edit Course');
+                    $("#frmAddUpdateBtn").html('Update');
+                    $('#modalAddOrUpdate').modal("show");
+                }
+            });
+        });
+
+        $(function () {
+            $('#courseTable tbody').on('click', 'span.delete', function () {
+                $('#confirmation').modal();
+                var v = $(this).parent().parent();
+                var rowData = courseTable.row(v).data();
+                id = parseInt(rowData.courseId);
+            });
+        });
+
+        $(function () {
+            $('#confirmation').on('click', '.confirmed', function () {
+                $.get("/Configuration/DeleteCourse/" + id, function (data) {
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    } else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    id = 0;
+                    courseTable.ajax.reload();
+                });
+            });
+        });
+    </script>
+}
+

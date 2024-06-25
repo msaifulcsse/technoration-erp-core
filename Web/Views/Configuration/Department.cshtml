@@ -1,0 +1,250 @@
+﻿@using Entities.ViewModels
+@model VmDepartment
+@{
+    ViewData["Title"] = "Department";
+    Layout = "_Admin_Layout";
+}
+
+<link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+<link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Department</h1>
+        <button type="button" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" id="AddNewDepartment">
+            <i class="fas fa-plus"></i> Department
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="departmentTable" class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Details</th>
+                            <th>CreatedBy</th>
+                            <th>CreatedOn</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="modalAddOrUpdate">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title addorupdate">Add Department</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" autocomplete="off">
+                        <input type='hidden' name="DepartmentId" id="DepartmentId" value="0">
+                        <div class="form-group">
+                            <label>Department Name</label>
+                            <input type="text" name="DepartmentName" id="DepartmentName" class="form-control form-padding" />
+                            <span id="spnDepartmentName" class="text-danger" style="display:none;"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Department Details</label>
+                            <textarea name="DepartmentDetails" id="DepartmentDetails" class="form-control form-padding" rows="2"></textarea>
+                            <span id="spnDepartmentDetails" class="text-danger" style="display:none;"></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    <button type="button" id="frmAddUpdateBtn" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="confirmation">
+        <div class="roleManage modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title">Do you really want to delete?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>After deleting this data, will not available in this table!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger confirmed" data-dismiss="modal">Yes, I Want</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">No, I don't</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/sweetalert/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        var id = 0;
+        var deptTable;
+
+        $(document).ready(function () {
+            deptTable = $('#departmentTable').DataTable({
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "pageLength": 10,
+                "ordering": false,
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "paging": true,
+                "responsive": true,
+                "ajax": {
+                    "url": "/Configuration/AjaxDepartments",
+                    "data": function (d) { }
+                },
+                "columns": [
+                    { "data": "departmentId" },//Column Number:0
+                    { "data": "departmentName" },//Column Number:1
+                    { "data": "departmentDetails" },//Column Number:2
+                    { "data": "createdBy" },//Column Number:3
+                    { "data": "creationDate" },//Column Number:4
+                    {
+                        "title": "Action",//Column Number:5
+                        "render": function (data, type, row, meta) {
+                            return '<span class="update" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit bg-edit-action"></i></span> &nbsp;<span class="delete" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt bg-delete-action"></i></span>';
+                        }
+                    }
+                ],
+                "drawCallback": function (settings) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+
+        });
+
+        $("#AddNewDepartment").on("click", function () {
+            $('#DepartmentId').val(0);
+            $("#DepartmentName").val("");
+            $("#DepartmentDetails").val("");
+            $(".addorupdate").html('Add Department');
+            $("#frmAddUpdateBtn").html('Save');
+            $("#frmAddUpdateBtn").prop("disabled", false);
+            $('#modalAddOrUpdate').modal('show');
+        });
+
+        function VmDepartment() {
+            var DepartmentId;
+            var DepartmentName;
+            var DepartmentDetails;
+        }
+
+        $("#frmAddUpdateBtn").click(function () {
+            var isValid = true;
+            var deptId = $("#DepartmentId").val();
+            var deptName = $.trim($("#DepartmentName").val());
+            var deptDetails = $.trim($("#DepartmentDetails").val());
+
+            $("#spnDepartmentName").hide();
+            $("#spnDepartmentDetails").hide();
+
+            if (deptName == null || deptName == "") {
+                $("#spnDepartmentName").text("Provide the department name.");
+                $("#spnDepartmentName").show();
+                isValid = false;
+            }
+            if (deptDetails != null && deptDetails.length > 500) {
+                $("#spnDepartmentDetails").text("Department details must be kept in between 500 characters.");
+                $("#spnDepartmentDetails").show();
+                isValid = false;
+            }
+
+            if (deptId >= 0 && isValid == true) {
+                $("#frmAddUpdateBtn").prop("disabled", true);
+                var data = new VmDepartment();
+                data.DepartmentId = deptId;
+                data.DepartmentName = deptName;
+                data.DepartmentDetails = deptDetails;
+
+                $.post("/Configuration/DepartmentAddEdit", { model: data }, function (data) {
+                    $("#frmAddUpdateBtn").prop("disabled", false);
+                    $('#modalAddOrUpdate').modal('hide');
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end', width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end', width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    deptTable.ajax.reload();
+                    isValid = true;
+                });
+            }
+            return isValid;
+        });
+
+        $(function () {
+            $('#departmentTable tbody').on('click', 'span.update', function () {
+                var v = $(this).parent().parent();
+                var rowData = deptTable.row(v).data();
+                $('#DepartmentId').val(rowData.departmentId);
+                $("#DepartmentName").val(rowData.departmentName);
+                $("#DepartmentDetails").val(rowData.departmentDetails);
+                $(".addorupdate").html('Edit Department');
+                $("#frmAddUpdateBtn").html('Update');
+                $('#modalAddOrUpdate').modal("show");
+            });
+        });
+
+        $(function () {
+            $('#departmentTable tbody').on('click', 'span.delete', function () {
+                $('#confirmation').modal();
+                var v = $(this).parent().parent();
+                var rowData = deptTable.row(v).data();
+                id = parseInt(rowData.departmentId);
+            });
+        });
+
+        $(function () {
+            $('#confirmation').on('click', '.confirmed', function () {
+                $.get("/Configuration/DeleteDepartment/" + id, function (data) {
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end', width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    } else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end', width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    id = 0;
+                    deptTable.ajax.reload();
+                });
+            });
+        });
+    </script>
+}
+

@@ -1,0 +1,26 @@
+# All the files under the below folders will be ignored.
+
+# StudentPerformanceAnalysis Main Project File
+.vs/
+bin/
+obj/
+
+# StudentPerformanceAnalysis Tenant Project File
+Tenant/bin
+Tenant/obj
+
+# StudentPerformanceAnalysis Entity Project File
+Entities/bin
+Entities/obj
+
+# StudentPerformanceAnalysis Repository Project File
+Repository/bin
+Repository/obj
+
+# StudentPerformanceAnalysis Services Project File
+Services/bin
+Services/obj
+
+# StudentPerformanceAnalysis WebAPI Project File
+Web/bin
+Web/obj

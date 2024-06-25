@@ -1,0 +1,166 @@
+﻿@{
+    ViewData["Title"] = "Student List";
+    Layout = "_Admin_Layout";
+}
+
+<link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+<link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Student List</h1>
+        <button type="button" onclick="window.location.href='/Student/AddNew';" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus"></i> Student
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="studentTable" class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Registration</th>
+                            <th>Roll</th>
+                            <th>Batch</th>
+                            <th>Department</th>
+                            <th>Type</th>
+                            <th>Gender</th>
+                            <th>Contact</th>
+                            <th>RegisteredOn</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="confirmation">
+        <div class="roleManage modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title">Do you really want to delete?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>After deleting this data, will not available in this table!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger confirmed" data-dismiss="modal">Yes, I Want</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">No, I don't</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/sweetalert/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        var id = 0;
+        var studentTable;
+        var infoMessage = '@TempData["InfoMessage"]';
+        var errorMessage = '@TempData["ErrorMessage"]';
+
+        $(document).ready(function () {
+            if (infoMessage != null && infoMessage != "") {
+                Swal.fire({
+                    position: 'top-end',width: 400,
+                    type: 'success',
+                    text: infoMessage,
+                    showConfirmButton: false,
+                    timer: 5000
+                });
+            }
+            if (errorMessage != null && errorMessage != "") {
+                Swal.fire({
+                    position: 'top-end',width: 400,
+                    type: 'error',
+                    text: errorMessage,
+                    showConfirmButton: false,
+                    timer: 5000
+                });
+            }
+            studentTable = $('#studentTable').DataTable({
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "pageLength": 10,
+                "ordering": false,
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "paging": true,
+                "responsive": true,
+                "ajax": {
+                    "url": "/Student/AjaxStudents",
+                    "data": function (d) { }
+                },
+                "columns": [
+                    { "data": "studentId" },//Column Number:0
+                    { "data": "studentName" },//Column Number:1
+                    { "data": "registrationNumber" },//Column Number:2
+                    {
+                        "title": "Roll",//Column Number:3
+                        "render": function (data, type, row, meta) {
+                            return row.rollNumber;
+                        }
+                    },
+                    { "data": "batchName" },//Column Number:4
+                    { "data": "departmentName" },//Column Number:5
+                    { "data": "studentType" },//Column Number:6
+                    { "data": "studentGender" },//Column Number:7
+                    { "data": "contactNumber" },//Column Number:8
+                    { "data": "registrationDate" },//Column Number:9
+                    {
+                        "title": "Action",//Column Number:8
+                        "render": function (data, type, row, meta) {
+                            return '<a class="view" href="/Student/Details/' + row.studentId + '" data-toggle="tooltip" data-placement="top" title="View"><i class="fas fa-eye bg-view-action"></i></a> &nbsp;<a class="update" href="/Student/Edit/' + row.studentId + '" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit bg-edit-action"></i></a> &nbsp;<span class="delete" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt bg-delete-action"></i></span>';
+                        }
+                    }
+                ],
+                "drawCallback": function (settings) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+        });
+
+        $(function () {
+            $('#studentTable tbody').on('click', 'span.delete', function () {
+                $('#confirmation').modal();
+                var v = $(this).parent().parent();
+                var rowData = studentTable.row(v).data();
+                id = parseInt(rowData.studentId);
+            });
+        });
+
+        $(function () {
+            $('#confirmation').on('click', '.confirmed', function () {
+                $.get("/Student/DeleteStudent/" + id, function (data) {
+                    if (data.sucMessage != null && data.sucMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'success',
+                            text: data.sucMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    } else if (data.errMessage != null && data.errMessage != "") {
+                        Swal.fire({
+                            position: 'top-end',width: 400,
+                            type: 'error',
+                            text: data.errMessage,
+                            showConfirmButton: false,
+                            timer: 5000
+                        });
+                    }
+                    id = 0;
+                    studentTable.ajax.reload();
+                });
+            });
+        });
+    </script>
+}
+

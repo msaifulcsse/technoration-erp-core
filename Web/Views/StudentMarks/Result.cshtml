@@ -1,0 +1,400 @@
+﻿@{
+    ViewData["Title"] = "Student Result";
+    Layout = "_Admin_Layout";
+}
+
+<link href="~/css/select2.min.css" rel="stylesheet" />
+<link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<style type="text/css">
+    .sk-circle-student-marks {
+        width: 100px !important;
+        height: 100px !important;
+        position: absolute !important;
+        z-index: 1200 !important;
+        left: 45% !important;
+        top: 20% !important;
+    }
+
+    .td-stundent-marks-criteria-total {
+        width: 10%;
+        text-align: center;
+        padding: 20px 0px 0px 0px !important;
+        font-weight: 600;
+    }
+
+    .spn-stundent-marks-criteria-total {
+        border: 1px solid #e9edf0;
+        padding: 7px 10px;
+        border-radius: 5px;
+        background: #e9edf0;
+    }
+
+    .dummy_stundent_marks_action {
+        display: flex;
+    }
+</style>
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Student Result</h1>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="col">
+                        <label class="form-check-label">Department</label>
+                        @Html.DropDownList("DepartmentId", new SelectList(ViewBag.Departments, "Id", "Name"), "Select", new { @class = "form-control form-padding", id = "StudentDepartmentId" })
+                    </div>
+                    <div class="col">
+                        <label class="form-check-label">Semester</label>
+                        @Html.DropDownList("StudentSemesterId", new SelectList(Enumerable.Empty<SelectListItem>()), "Select", new { @class = "form-control form-padding disabler bg-gray", id = "StudentSemesterId" })
+                    </div>
+                    <div class="col">
+                        <label class="form-check-label">Batch</label>
+                        @Html.DropDownList("StudentBatchId", new SelectList(Enumerable.Empty<SelectListItem>()), "Select", new { @class = "form-control form-padding disabler bg-gray", id = "StudentBatchId" })
+                    </div>
+                    <div class="col">
+                        <label class="form-check-label">Student</label>
+                        @Html.DropDownList("StudentHeaderId", new SelectList(Enumerable.Empty<SelectListItem>()), "Select", new { @class = "form-control form-padding disabler bg-gray", id = "StudentHeaderId", disabled = "true" })
+                    </div>
+                </div>
+            </div>
+            <hr class="sidebar-divider">
+            <div class="student-marks-entry">
+                <div class="loader-viewer-section" style="display: none;">
+                    <div class="table table-bordered text-center" width="100%" cellspacing="0" style="padding: 15%;">
+                        <div class="sk-circle sk-circle-student-marks" style="display: none;" id="LoaderStudentMarksEntry">
+                            <div class="sk-circle1 sk-child"></div>
+                            <div class="sk-circle2 sk-child"></div>
+                            <div class="sk-circle3 sk-child"></div>
+                            <div class="sk-circle4 sk-child"></div>
+                            <div class="sk-circle5 sk-child"></div>
+                            <div class="sk-circle6 sk-child"></div>
+                            <div class="sk-circle7 sk-child"></div>
+                            <div class="sk-circle8 sk-child"></div>
+                            <div class="sk-circle9 sk-child"></div>
+                            <div class="sk-circle10 sk-child"></div>
+                            <div class="sk-circle11 sk-child"></div>
+                            <div class="sk-circle12 sk-child"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive dummy_student_mark_entry_viewer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/js/select2.min.js" type="text/javascript"></script>
+    <script src="~/js/sweetalert/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        var departmentHeaderId = 0;
+        var semesterHeaderId = 0;
+        var studentBatchId = 0;
+        var studentHeaderId = 0;
+
+        $(document).ready(function () {
+            $("#StudentHeaderId").select2({
+                closeOnSelect: true,
+                placeholder: "Select Student",
+                allowHtml: true,
+                allowClear: true,
+                tags: true
+            });
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $("#StudentDepartmentId").change(function () {
+            departmentHeaderId = $('#StudentDepartmentId').val();
+            if (departmentHeaderId != null && departmentHeaderId != "" && departmentHeaderId > 0) {
+                $("#StudentSemesterId").prop("disabled", false).removeClass('disabler').removeClass('bg-gray');
+                $.ajax({
+                    type: "POST",
+                    url: "/Configuration/GetAllSemesters",
+                    success: function (data) {
+                        $('#StudentSemesterId').html("");
+                        $('#StudentSemesterId').append($('<option>', { value: "", text: "Select" }));
+                        $.each(data, function (key, value) {
+                            $.each(value, function (i, j) {
+                                $('#StudentSemesterId').append($('<option>', {
+                                    value: j.id,
+                                    text: j.name
+                                }));
+                            });
+                        });
+                    }
+                });
+            }
+            else {
+                $("#StudentSemesterId").val(null).change().prop("disabled", true).addClass('disabler').addClass('bg-gray');
+                $("#StudentBatchId").val(null).change().prop("disabled", true).addClass('disabler').addClass('bg-gray');
+                $("#StudentHeaderId").val(null).change().prop("disabled", true).addClass('disabler').addClass('bg-gray');
+            }
+        });
+        $("#StudentSemesterId").change(function () {
+            semesterHeaderId = $('#StudentSemesterId').val();
+
+            if (semesterHeaderId != null && semesterHeaderId != "" && semesterHeaderId > 0) {
+                $("#StudentBatchId").prop("disabled", false).removeClass('disabler').removeClass('bg-gray');
+                $.ajax({
+                    type: "POST",
+                    url: "/Configuration/GetAllBatches",
+                    success: function (data) {
+                        $('#StudentBatchId').html("");
+                        $('#StudentBatchId').append($('<option>', { value: "", text: "Select" }));
+                        $.each(data, function (key, value) {
+                            $.each(value, function (i, j) {
+                                $('#StudentBatchId').append($('<option>', {
+                                    value: j.id,
+                                    text: j.name
+                                }));
+                            });
+                        });
+                    }
+                });
+            }
+            else {
+                $("#StudentBatchId").prop("disabled", true).addClass('disabler').addClass('bg-gray');
+                $("#StudentHeaderId").prop("disabled", true).addClass('disabler').addClass('bg-gray');
+            }
+        });
+        $("#StudentBatchId").change(function () {
+            studentBatchId = $('#StudentBatchId').val();
+
+            if (studentBatchId != null && studentBatchId != "" && studentBatchId > 0) {
+                $("#StudentHeaderId").prop("disabled", false).removeClass('disabler').removeClass('bg-gray');
+                $.ajax({
+                    type: "POST",
+                    url: "/Configuration/GetAllStudentsByBatch",
+                    data: { batchId: studentBatchId },
+                    success: function (data) {
+                        $('#StudentHeaderId').html("");
+                        $('#StudentHeaderId').append($('<option>', { value: "", text: "Select" }));
+                        $.each(data, function (key, value) {
+                            $.each(value, function (i, j) {
+                                $('#StudentHeaderId').append($('<option>', {
+                                    value: j.id,
+                                    text: j.name
+                                }));
+                            });
+                        });
+                    }
+                });
+            }
+            else {
+                $("#StudentHeaderId").prop("disabled", true).addClass('disabler').addClass('bg-gray');
+            }
+        });
+        $("#StudentHeaderId").change(function () {
+            studentHeaderId = $('#StudentHeaderId').val();
+            if (studentHeaderId != null && studentHeaderId != "" && studentHeaderId > 0) {
+                $('.dummy_student_mark_entry_viewer').html("");
+                $('#LoaderStudentMarksEntry').show().parent().parent().show();
+                $.ajax({
+                    type: "POST",
+                    url: "/StudentMarks/GetStudentAllCoursesMarksByID",
+                    data: { departmentId: departmentHeaderId, semesterId: semesterHeaderId, studentId: studentHeaderId },
+                    success: function (data) {
+                        var dynamicCourseMarksContent = "";
+                        if (data != null && data.allMarkingCriterias != null && data.allMarkingCriterias.length > 0 && data.allCoursesWithMarks != null && data.allCoursesWithMarks.length > 0) {
+                            var tblBodyContentDynamicEmptyTDs = "";
+                            var allMarkingCriteriasCount = data.allMarkingCriterias.length;
+                            var tableSbmtLoader = '<div class="sk-circle sk-circle-student-marks" style="display: none;" id="LoaderStudentMarksSubmit">'
+                                + '<div class="sk-circle1 sk-child"></div>'
+                                + '<div class="sk-circle2 sk-child"></div>'
+                                + '<div class="sk-circle3 sk-child"></div>'
+                                + '<div class="sk-circle4 sk-child"></div>'
+                                + '<div class="sk-circle5 sk-child"></div>'
+                                + '<div class="sk-circle6 sk-child"></div>'
+                                + '<div class="sk-circle7 sk-child"></div>'
+                                + '<div class="sk-circle8 sk-child"></div>'
+                                + '<div class="sk-circle9 sk-child"></div>'
+                                + '<div class="sk-circle10 sk-child"></div>'
+                                + '<div class="sk-circle11 sk-child"></div>'
+                                + '<div class="sk-circle12 sk-child"></div>'
+                                + '</div>';
+                            var tblStarting = '<table id="studentCoursesMarksTable" class="table table-bordered" width="100%" cellspacing="0"><thead><tr class="text-center">';
+                            var tblHeadStarting = ""; var tblHeadEnding = '</tr></thead><tbody>'; var tblBodyContent = "";
+                            var tblEnding = '</tbody></table><hr class="sidebar-divider"><div class="dummy_stundent_marks_action">'
+                                + '<button class="btn btn-danger btn-large" id="btnStudentMarksCancel" onClick="OnClickStudentMarksBtn(\'cancel\');" style="width: 25%; margin: 0px 10px 0px 0px;">Close/Cancel</button>'
+                                + '<button type = "button" class="btn btn-info btn-large" id="btnStudentMarksSendToEmail" onClick="OnClickStudentMarksBtn(\'sendtoemail\');" style="width: 25%; margin: 0px 10px 0px 0px;"> Send Email</button >'
+                                + '<button type="button" class="btn btn-warning btn-large" id="btnStudentMarksSendToMessage" onClick="OnClickStudentMarksBtn(\'sendtomessage\');" style="width: 25%; margin: 0px 10px 0px 0px;">Send Message</button>'
+                                + '<button type="button" class="btn btn-primary btn-large" id="btnStudentMarksPdfDownload" onClick="OnClickStudentMarksBtn(\'pdfdownload\');" style="width: 25%; margin: 0px;">PDF Download</button>'
+                                + '</div>';
+
+                            $.each(data.allMarkingCriterias, function (criteriaCounter, criteriaInfo) {
+                                if (criteriaCounter == 0) {
+                                    tblHeadStarting += '<th data-toggle="tooltip" data-placement="right" title="Course Code">C.Code</th>';
+                                    tblHeadStarting += '<th class="dummy_mark_criteria_' + criteriaInfo.markingCriteriaId + '">' + criteriaInfo.markingCriteriaName + '</th>';
+
+                                    //For Course Marks Of Empty Results
+                                    tblBodyContentDynamicEmptyTDs += '<td class="dummy_stundent_marks_criteria_' + criteriaInfo.markingCriteriaId + '" criteria-id="' + criteriaInfo.markingCriteriaId + '"><input type="text" disabled step="0.01" class="form-control form-padding" min="' + criteriaInfo.minimumValue + '" max="' + criteriaInfo.maximumValue + '" value="0" /></td>';
+                                }
+                                else if (criteriaCounter == (allMarkingCriteriasCount - 1)) {
+                                    tblHeadStarting += '<th class="dummy_mark_criteria_' + criteriaInfo.markingCriteriaId + '">' + criteriaInfo.markingCriteriaName + '</th>';
+                                    tblHeadStarting += '<th class="dummy_mark_criteria_' + criteriaInfo.markingCriteriaId + '">In Total</th>';
+
+                                    //For Course Marks Of Empty Results
+                                    tblBodyContentDynamicEmptyTDs += '<td class="dummy_stundent_marks_criteria_' + criteriaInfo.markingCriteriaId + '" criteria-id="' + criteriaInfo.markingCriteriaId + '"><input type="text" disabled step="0.01" class="form-control form-padding" min="' + criteriaInfo.minimumValue + '" max="' + criteriaInfo.maximumValue + '" value="0" /></td>';
+                                    tblBodyContentDynamicEmptyTDs += '<td criteria-id="' + criteriaInfo.markingCriteriaId + '" class="td-stundent-marks-criteria-total"><span class="spn-stundent-marks-criteria-total dummy_stundent_marks_criteria_total">0</span></td>';
+                                }
+                                else {
+                                    tblHeadStarting += '<th class="dummy_mark_criteria_' + criteriaInfo.markingCriteriaId + '">' + criteriaInfo.markingCriteriaName + '</th>';
+
+                                    //For Course Marks Of Empty Results
+                                    tblBodyContentDynamicEmptyTDs += '<td class="dummy_stundent_marks_criteria_' + criteriaInfo.markingCriteriaId + '" criteria-id="' + criteriaInfo.markingCriteriaId + '"><input type="text" disabled step="0.01" class="form-control form-padding" min="' + criteriaInfo.minimumValue + '" max="' + criteriaInfo.maximumValue + '" value="0" /></td>';
+                                }
+                            });
+
+                            $.each(data.allCoursesWithMarks, function (courseCounter, courseInfo) {
+                                if (courseInfo.courseMarks != null && courseInfo.courseMarks.length > 0) {
+                                    var tblBodyContentDynamicTDs = "";
+                                    var courseCriteriasTotalMarks = 0;
+                                    var courseMarksLengthCount = courseInfo.courseMarks.length;
+                                    var tblBodyContentStarter = '<tr class="dummy_stundent_marks_course_' + courseInfo.courseId + '" course-id="' + courseInfo.courseId + '"><td data-toggle="tooltip" data-placement="right" title="' + courseInfo.courseName + '">' + courseInfo.courseCode + '</td>';
+
+                                    $.each(courseInfo.courseMarks, function (marksCounter, marksInfo) {
+                                        courseCriteriasTotalMarks += marksInfo.courseCriteriaMarks;
+                                        if (marksCounter == (courseMarksLengthCount - 1)) {
+                                            tblBodyContentDynamicTDs += '<td class="dummy_stundent_marks_criteria_' + marksInfo.markingCriteriaId + '" criteria-id="' + marksInfo.markingCriteriaId + '"><input type="text" disabled step="0.01" class="form-control form-padding" min="' + marksInfo.criteriaInfo.minimumValue + '" max="' + marksInfo.criteriaInfo.maximumValue + '" value="' + marksInfo.courseCriteriaMarks + '" /></td>';
+                                            tblBodyContentDynamicTDs += '<td criteria-id="' + marksInfo.markingCriteriaId + '" class="td-stundent-marks-criteria-total"><span class="spn-stundent-marks-criteria-total dummy_stundent_marks_criteria_total">' + courseCriteriasTotalMarks + '</span></td>';
+                                        }
+                                        else {
+                                            tblBodyContentDynamicTDs += '<td class="dummy_stundent_marks_criteria_' + marksInfo.markingCriteriaId + '" criteria-id="' + marksInfo.markingCriteriaId + '"><input type="text" disabled step="0.01" class="form-control form-padding" min="' + marksInfo.criteriaInfo.minimumValue + '" max="' + marksInfo.criteriaInfo.maximumValue + '" value="' + marksInfo.courseCriteriaMarks + '" /></td>';
+                                        }
+                                    });
+                                    tblBodyContent += (tblBodyContentStarter + tblBodyContentDynamicTDs + '</tr>');
+                                }
+                                else {
+                                    var tblBodyContentStarter = '<tr class="dummy_stundent_marks_course_' + courseInfo.courseId + '" course-id="' + courseInfo.courseId + '"><td data-toggle="tooltip" data-placement="right" title="' + courseInfo.courseName + '">' + courseInfo.courseCode + '</td>';
+                                    tblBodyContent += (tblBodyContentStarter + tblBodyContentDynamicEmptyTDs + '</tr>');
+                                }
+                            });
+                            dynamicCourseMarksContent = tableSbmtLoader + tblStarting + tblHeadStarting + tblHeadEnding + tblBodyContent + tblEnding;
+                        } else {
+                            dynamicCourseMarksContent = '<table class="table table-bordered" width="100%" cellspacing="0"><thead><tr class="text-center"><th class="btn-danger">No Courses Result Published Yet For This Student!</th></tr></thead></thead></table><hr class="sidebar-divider">';
+                        }
+                        $('.dummy_student_mark_entry_viewer').append(dynamicCourseMarksContent);
+                        $('#LoaderStudentMarksEntry').hide().parent().parent().hide();
+                        $('[data-toggle="tooltip"]').tooltip();
+                    }
+                });
+            }
+            else {
+                $('.dummy_student_mark_entry_viewer').html("");
+                Swal.fire({
+                    position: 'top-end', width: 400,
+                    type: 'error',
+                    text: 'No student found with your search!',
+                    showConfirmButton: false,
+                    timer: 5000
+                });
+            }
+        });
+
+        function OnClickStudentMarksBtn(action) {
+            if (action != null && action == 'cancel') {
+                window.location.href = "/AdminDashboard/Index";
+            }
+            else if (action != null && action == 'pdfdownload') {
+                if (studentHeaderId != null && studentHeaderId > 0) {
+                    $("#btnStudentMarksPdfDownload").prop("disabled", true);
+                    $("#LoaderStudentMarksSubmit").show();
+
+                    $.post("/StudentMarks/StudentMarksPDFDownload", { studentId: studentHeaderId }, function (data) {
+                        $("#LoaderStudentMarksSubmit").hide();
+                        $("#btnStudentMarksPdfDownload").prop("disabled", false);
+                    });
+                }
+                else {
+                    Swal.fire({
+                        position: 'top-end', width: 400,
+                        type: 'error',
+                        text: 'Required data missing or invalid data provided!',
+                        showConfirmButton: false,
+                        timer: 5000
+                    });
+                }
+            }
+            else if (action != null && action == 'sendtoemail') {
+                if (studentHeaderId != null && studentHeaderId > 0) {
+                    $("#btnStudentMarksSendToEmail").prop("disabled", true);
+                    $("#LoaderStudentMarksSubmit").show();
+
+                    $.post("/StudentMarks/StudentMarksSendToEmail", { studentId: studentHeaderId }, function (data) {
+                        $("#LoaderStudentMarksSubmit").hide();
+                        $("#btnStudentMarksSendToEmail").prop("disabled", false);
+                        if (data.sucMessage != null && data.sucMessage != "") {
+                            Swal.fire({
+                                position: 'top-end', width: 400,
+                                type: 'success',
+                                text: data.sucMessage,
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
+                        }
+                        else if (data.errMessage != null && data.errMessage != "") {
+                            Swal.fire({
+                                position: 'top-end', width: 400,
+                                type: 'error',
+                                text: data.errMessage,
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
+                        }
+                    });
+                }
+                else {
+                    Swal.fire({
+                        position: 'top-end', width: 400,
+                        type: 'error',
+                        text: 'Required data missing or invalid data provided!',
+                        showConfirmButton: false,
+                        timer: 5000
+                    });
+                }
+            }
+            else if (action != null && action == 'sendtomessage') {
+                if (studentHeaderId != null && studentHeaderId > 0) {
+                    $("#btnStudentMarksSendToMessage").prop("disabled", true);
+                    $("#LoaderStudentMarksSubmit").show();
+
+                    $.post("/StudentMarks/StudentMarksSendToMessage", { studentId: studentHeaderId }, function (data) {
+                        $("#LoaderStudentMarksSubmit").hide();
+                        $("#btnStudentMarksSendToMessage").prop("disabled", false);
+                        if (data.sucMessage != null && data.sucMessage != "") {
+                            Swal.fire({
+                                position: 'top-end', width: 400,
+                                type: 'success',
+                                text: data.sucMessage,
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
+                        }
+                        else if (data.errMessage != null && data.errMessage != "") {
+                            Swal.fire({
+                                position: 'top-end', width: 400,
+                                type: 'error',
+                                text: data.errMessage,
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
+                        }
+                    });
+                }
+                else {
+                    Swal.fire({
+                        position: 'top-end', width: 400,
+                        type: 'error',
+                        text: 'Required data missing or invalid data provided!',
+                        showConfirmButton: false,
+                        timer: 5000
+                    });
+                }
+            }
+        }
+    </script>
+}
+

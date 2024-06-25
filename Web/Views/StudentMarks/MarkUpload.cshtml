@@ -1,0 +1,208 @@
+﻿@using Entities.ViewModels
+@model VmStudentMarksUpload
+@{
+    ViewData["Title"] = "Marks Upload";
+    Layout = "_Admin_Layout";
+}
+
+<link href="~/css/select2.min.css" rel="stylesheet" />
+<link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<style type="text/css">
+    .sk-circle-student-marks-upload {
+        width: 100px !important;
+        height: 100px !important;
+        position: absolute !important;
+        z-index: 1200 !important;
+        left: 45% !important;
+        top: -20% !important;
+    }
+
+    .td-stundent-marks-criteria-total {
+        width: 10%;
+        text-align: center;
+        padding: 20px 0px 0px 0px !important;
+        font-weight: 600;
+    }
+
+    .spn-stundent-marks-criteria-total {
+        border: 1px solid #e9edf0;
+        padding: 7px 10px;
+        border-radius: 5px;
+        background: #e9edf0;
+    }
+
+    .dummy_stundent_marks_action {
+        display: flex;
+    }
+</style>
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Student Marks Upload</h1>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form class="form-horizontal" id="frmStudentMarksUpload" enctype="multipart/form-data" autocomplete="off">
+                <div class="sk-circle sk-circle-student-marks-upload" style="display: none;" id="LoaderStudentMarksUpload">
+                    <div class="sk-circle1 sk-child"></div>
+                    <div class="sk-circle2 sk-child"></div>
+                    <div class="sk-circle3 sk-child"></div>
+                    <div class="sk-circle4 sk-child"></div>
+                    <div class="sk-circle5 sk-child"></div>
+                    <div class="sk-circle6 sk-child"></div>
+                    <div class="sk-circle7 sk-child"></div>
+                    <div class="sk-circle8 sk-child"></div>
+                    <div class="sk-circle9 sk-child"></div>
+                    <div class="sk-circle10 sk-child"></div>
+                    <div class="sk-circle11 sk-child"></div>
+                    <div class="sk-circle12 sk-child"></div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">Department</label>
+                            @Html.DropDownList("DepartmentId", new SelectList(ViewBag.Departments, "Id", "Name"), "Select", new { @class = "form-control form-padding", id = "StudentDepartmentId" })
+                            <span id="spnStudentDepartmentId" class="text-danger" style="display:none;"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Semester</label>
+                            @Html.DropDownList("SemesterId", new SelectList(Enumerable.Empty<SelectListItem>()), "Select", new { @class = "form-control form-padding disabler bg-gray", id = "StudentSemesterId" })
+                            <span id="spnStudentSemesterId" class="text-danger" style="display:none;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label">Semester Results(csv/excel)</label><br />
+                            <input type="file" name="ExcelOrCsvFile" id="ExcelOrCsvFile" accept=".csv,.xls,.xlsx" />
+                            <span id="spnExcelOrCsvFile" class="text-danger" style="display:none;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" onclick="window.location.href='/StudentPerformance/Index'" class="btn btn-primary btn-lg dummy_marks_upload_back">
+                                Go Back
+                            </button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-success btn-lg float-right" id="btnStudentMarksUpload">Upload</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/js/select2.min.js" type="text/javascript"></script>
+    <script src="~/js/sweetalert/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+            $("#LoaderStudentMarksUpload").hide();
+            $("#btnStudentMarksUpload").prop("disabled", false);
+            $(".dummy_marks_upload_back").prop("disabled", false);
+        });
+
+        $("#StudentDepartmentId").change(function () {
+            var departmentHeaderId = $('#StudentDepartmentId').val();
+            if (departmentHeaderId != null && departmentHeaderId != "" && departmentHeaderId > 0) {
+                $("#StudentSemesterId").prop("disabled", false).removeClass('disabler').removeClass('bg-gray');
+                $.ajax({
+                    type: "POST",
+                    url: "/Configuration/GetAllSemesters",
+                    success: function (data) {
+                        $('#StudentSemesterId').html("");
+                        $('#StudentSemesterId').append($('<option>', { value: "", text: "Select" }));
+                        $.each(data, function (key, value) {
+                            $.each(value, function (i, j) {
+                                $('#StudentSemesterId').append($('<option>', {
+                                    value: j.id,
+                                    text: j.name
+                                }));
+                            });
+                        });
+                    }
+                });
+            }
+            else {
+                $("#StudentSemesterId").val(null).change().prop("disabled", true).addClass('disabler').addClass('bg-gray');
+            }
+        });
+
+        $("#btnStudentMarksUpload").click(function () {
+            var isValid = true;
+            var departmentId = $("#StudentDepartmentId").val();
+            var semesterId = $("#StudentSemesterId").val();
+            var uploadFile = $("#ExcelOrCsvFile").val();
+
+            $("#spnStudentDepartmentId").hide();
+            $("#spnStudentSemesterId").hide();
+            $("#spnExcelOrCsvFile").hide();
+
+            if (departmentId == null || departmentId == "" || departmentId <= 0) {
+                $("#spnStudentDepartmentId").text("Please select a department.");
+                $("#spnStudentDepartmentId").show();
+                isValid = false;
+            }
+            if (semesterId == null || semesterId == "" || semesterId<= 0) {
+                $("#spnStudentSemesterId").text("Please select a semester.");
+                $("#spnStudentSemesterId").show();
+                isValid = false;
+            }
+            if (uploadFile == null || uploadFile == "") {
+                $("#spnExcelOrCsvFile").text("Provide the semester resutls csv/excel file.");
+                $("#spnExcelOrCsvFile").show();
+                isValid = false;
+            }
+
+            if (departmentId != null && departmentId > 0 && semesterId != null && semesterId > 0 && uploadFile != null && uploadFile != "") {     
+                $("#LoaderStudentMarksUpload").show();
+                $("#btnStudentMarksUpload").prop("disabled", true);
+                $(".dummy_marks_upload_back").prop("disabled", true);
+                var frmMarksUploadData = $("#frmStudentMarksUpload")[0];
+
+                if (frmMarksUploadData.getAttribute("enctype") === "multipart/form-data") {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("post", "/StudentMarks/MarksUploadWithAllCriteria");
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState == 4 && xhr.status == 200) {
+                            var respose = JSON.parse(xhr.responseText);
+                            if (respose["sucMessage"] != null && respose["sucMessage"] != "") {
+                                Swal.fire({
+                                    position: 'top-end', width: 400,
+                                    type: 'success',
+                                    text: respose["sucMessage"],
+                                    showConfirmButton: false,
+                                    timer: 5000
+                                });
+                            }
+                            else if (respose["errMessage"] != null && respose["errMessage"] != "") {
+                                Swal.fire({
+                                    position: 'top-end', width: 400,
+                                    type: 'error',
+                                    text: respose["errMessage"],
+                                    showConfirmButton: false,
+                                    timer: 5000
+                                });
+                            }
+                            isValid = true;
+                            $('#frmStudentMarksUpload')[0].reset();
+                            $("#LoaderStudentMarksUpload").hide();
+                            $("#btnStudentMarksUpload").prop("disabled", false);
+                            $(".dummy_marks_upload_back").prop("disabled", false);
+                        }
+                    };
+                    xhr.send(new FormData(frmMarksUploadData));
+                }
+            }
+            return isValid;
+        });
+    </script>
+}
+
+
