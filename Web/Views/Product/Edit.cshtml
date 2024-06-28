@@ -1,0 +1,87 @@
+﻿@using Entities.ViewModels
+@model VmProductData
+@{
+    ViewData["Title"] = "Product | Update";
+    Layout = "_Admin_Layout";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker.min.css" />
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Update Product</h1>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form asp-action="ProductAddEdit" asp-controller="Product" method="post" class="form-horizontal" id="frmUpdateProduct" enctype="multipart/form-data" autocomplete="off">
+                <input type="hidden" asp-for="ProductId" value="@Model.ProductId" />
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label asp-for="ProductCode">Product Code</label>
+                            <input type="text" class="form-control form-padding" asp-for="ProductCode" placeholder="Product Code" />
+                            <span asp-validation-for="ProductCode" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label asp-for="ProductName">Product Name</label>
+                            <input type="text" class="form-control form-padding" asp-for="ProductName" placeholder="Product Name">
+                            <span asp-validation-for="ProductName" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label asp-for="Brand">Brand</label>
+                            <input type="text" class="form-control form-padding" asp-for="Brand" placeholder="Brand">
+                            <span asp-validation-for="Brand" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label asp-for="Size">Size</label>
+                            <input type="text" class="form-control form-padding" asp-for="Size" placeholder="Size">
+                            <span asp-validation-for="Size" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label asp-for="Variant">Variant</label>
+                            <input type="text" class="form-control form-padding" asp-for="Variant" placeholder="Variant">
+                            <span asp-validation-for="Variant" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label asp-for="Unit">Unit</label>
+                            <input type="text" class="form-control form-padding" asp-for="Unit" placeholder="Unit">
+                            <span asp-validation-for="Unit" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label asp-for="BarcodeNumber">Barcode Number</label>
+                            <input type="text" class="form-control form-padding" asp-for="BarcodeNumber" placeholder="Barcode Number">
+                            <span asp-validation-for="BarcodeNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label asp-for="QRCodeText">QRCode Text</label>
+                            <input type="text" class="form-control form-padding" asp-for="QRCodeText" placeholder="QRCode Text">
+                            <span asp-validation-for="QRCodeText" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" onclick="window.location.href='/Product/Index'" class="btn btn-primary btn-lg">
+                                Go Back
+                            </button>
+                        </div>
+                        <div class="col">
+                            <input type="submit" value="Update" class="btn btn-success btn-lg float-right" id="btnProductUpdate" />
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+}

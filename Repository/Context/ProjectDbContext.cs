@@ -67,6 +67,9 @@ namespace Repository.Context
         public virtual DbSet<MarkingBadge> MarkingBadges { get; set; }
         public virtual DbSet<MarkingCriteriasBadge> MarkingCriteriasBadges { get; set; }
         public virtual DbSet<StudentCourseMarks> StudentCourseMarks { get; set; }
+
+
+        public virtual DbSet<Product> Products { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -226,10 +226,11 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/AdminDashboard/Index">
-                <div class="sidebar-brand-icon">
+                Shetu Industry Co. Ltd.
+                @*<div class="sidebar-brand-icon">
                     <img style="height: 60px;width:80px;" src="/asset/images/new-logo.png">
                 </div>
-                <div class="sidebar-brand-text mx-3" style="font-size: .75rem;">Student Performace Analysis</div>
+                <div class="sidebar-brand-text mx-3" style="font-size: .75rem;">Student Performace Analysis</div>*@
             </a>
             <hr class="sidebar-divider my-0">
             <li class="nav-item active" id="adminNavItem">
@@ -246,13 +247,13 @@
                 </a>
                 <div id="collapseConfig" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="/Configuration/Department">Departments</a>
-                        <a class="collapse-item" href="/Configuration/Batch">Batches</a>
-                        <a class="collapse-item" href="/Configuration/Semester">Semesters</a>
-                        <a class="collapse-item" href="/Configuration/Course">Courses</a>
-                        <a class="collapse-item" href="/Configuration/MarkingCriteria">Marking Criterias</a>
-                        <a class="collapse-item" href="/Configuration/MarkingBadge">Marking Badges</a>
-                        <a class="collapse-item" href="/Configuration/CriteriasBadges">Criterias Badges</a>
+                        <a class="collapse-item" href="#">Category</a>
+                        <a class="collapse-item" href="#">Sub Category</a>
+                        <a class="collapse-item" href="#">Company Settings</a>
+                        <a class="collapse-item" href="#">Invoice Settings</a>
+                        <a class="collapse-item" href="#">Email Setup</a>
+                        <a class="collapse-item" href="#">SMS Gateway</a>
+                        <a class="collapse-item" href="#">Payment Gateway</a>
                     </div>
                 </div>
             </li>
@@ -261,12 +262,12 @@
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFaculty"
                    aria-expanded="true" aria-controls="collapseFaculty">
                     <i class="fas fa-fw fa-briefcase"></i>
-                    <span>Faculty Management</span>
+                    <span>Product Management</span>
                 </a>
                 <div id="collapseFaculty" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="/Employee/AddNew">Add New</a>
-                        <a class="collapse-item" href="/Employee/Index">Faculty List</a>
+                        <a class="collapse-item" href="/Product/AddNew">Add New</a>
+                        <a class="collapse-item" href="/Product/Index">Product List</a>
                     </div>
                 </div>
             </li>
@@ -275,12 +276,12 @@
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseStudents"
                    aria-expanded="true" aria-controls="collapseStudents">
                     <i class="fas fa-fw fa-users"></i>
-                    <span>Student Management</span>
+                    <span>Vendor Management</span>
                 </a>
                 <div id="collapseStudents" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="/Student/AddNew">Add New</a>
-                        <a class="collapse-item" href="/Student/Index">Student List</a>
+                        <a class="collapse-item" href="#">Add New</a>
+                        <a class="collapse-item" href="#">Vendor List</a>
                     </div>
                 </div>
             </li>
@@ -289,20 +290,19 @@
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseMarksAndResult"
                    aria-expanded="true" aria-controls="collapseMarksAndResult">
                     <i class="fas fa-fw fa-copy"></i>
-                    <span>Marking and Results</span>
+                    <span>Supplier Management</span>
                 </a>
                 <div id="collapseMarksAndResult" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="/StudentMarks/MarkEntry">Mark Entry(Single)</a>
-                        <a class="collapse-item" href="/StudentMarks/MarkUpload">Mark Upload(csv/excel)</a>
-                        <a class="collapse-item" href="/StudentMarks/Result">Student Result</a>
+                        <a class="collapse-item" href="#">Add New</a>
+                        <a class="collapse-item" href="#">Supplier List</a>
                     </div>
                 </div>
             </li>
             <hr class="sidebar-divider">
             <li class="nav-item" id="PerformanceNavItem">
-                <a class="nav-link" href="/StudentPerformance/Index">
-                    <i class="fas fa-fw fa-chart-bar"></i><span>Performace Analysis</span>
+                <a class="nav-link" href="#">
+                    <i class="fas fa-fw fa-chart-bar"></i><span>Analytics</span>
                 </a>
             </li>
             <hr class="sidebar-divider d-none d-md-block">
@@ -474,7 +474,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Shetu Admin</span>
                                 <img class="img-profile rounded-circle"
                                      src="~/images/undraw_profile.svg">
                             </a>
@@ -510,7 +510,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; 2021 - DIU 68th Batch Students</span>
+                        <span>Copyright &copy; @DateTime.Now.Year - Shetu Industry Company Ltd. | Powered By <a href="https://technoration.com" target="_blank">Technoration Limited</a></span>
                     </div>
                 </div>
             </footer>

@@ -66,5 +66,9 @@ namespace Web.Constants
         public const string EMPLOYEE_CREATED = "Faculty has been successfully created.";
         public const string EMPLOYEE_UPDATED = "Faculty has been successfully updated.";
         public const string EMPLOYEE_DELETED = "Faculty has been successfully deleted.";
+
+        public const string PRODUCT_CREATED = "Product has been successfully created.";
+        public const string PRODUCT_UPDATED = "Product has been successfully updated.";
+        public const string PRODUCT_DELETED = "Product has been successfully deleted.";
     }
 }

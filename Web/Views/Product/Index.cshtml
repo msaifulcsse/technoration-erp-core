@@ -1,0 +1,135 @@
+﻿@{
+    ViewData["Title"] = "Product List";
+    Layout = "_Admin_Layout";
+}
+
+<link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+<link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Product List</h1>
+        <button type="button" onclick="window.location.href='/Product/AddNew';" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus"></i> Product
+        </button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tblProduct" class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Brand</th>
+                            <th>Size</th>
+                            <th>Variant</th>
+                            <th>Unit</th>
+                            <th>Barcode</th>
+                            <th>QRCode</th>
+                            <th>CreatedOn</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" data-keyboard="false" id="confirmation">
+        <div class="roleManage modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title">Do you really want to delete?</h4>
+                </div>
+                <div class="modal-body">
+                    <p>After deleting this data, will not available in this table!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger confirmed" data-dismiss="modal">Yes, I Want</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">No, I don't</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/js/sweetalert/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+        var id = 0;
+        var tblProduct;
+        var infoMessage = '@TempData["InfoMessage"]';
+        var errorMessage = '@TempData["ErrorMessage"]';
+
+        $(document).ready(function () {
+            if (infoMessage != null && infoMessage != "") {
+                Swal.fire({
+                    position: 'top-end', width: 400,
+                    type: 'success',
+                    text: infoMessage,
+                    showConfirmButton: false,
+                    timer: 5000
+                });
+            }
+            if (errorMessage != null && errorMessage != "") {
+                Swal.fire({
+                    position: 'top-end', width: 400,
+                    type: 'error',
+                    text: errorMessage,
+                    showConfirmButton: false,
+                    timer: 5000
+                });
+            }
+
+            tblProduct = $('#tblProduct').DataTable({
+                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                "pageLength": 10,
+                "ordering": false,
+                "processing": true,
+                "serverSide": true,
+                "filter": true,
+                "paging": true,
+                "responsive": true,
+                "ajax": {
+                    "url": "/Product/AjaxProducts",
+                    "data": function (d) { }
+                },
+                "columns": [
+                    { "data": "productCode" },//Column Number:0
+                    { "data": "productName" },//Column Number:1
+                    { "data": "brand" },//Column Number:2
+                    { "data": "size" },//Column Number:3
+                    { "data": "variant" },//Column Number:4
+                    { "data": "unit" },//Column Number:5
+                    {
+                        "render": function (data, type, row, meta) {
+                            return '<img src="' + row.barcodeImagePath + '" alt="Barcode Image" style="width:50px; height:50px;" />';
+                        }
+                    },//Column Number:6
+                    {
+                        "render": function (data, type, row, meta) {
+                            return '<img src="' + row.qrcodeImagePath + '" alt="Barcode Image" style="width:50px; height:50px;" />';
+                        }
+                    },//Column Number:7
+                    { "data": "creationDate" },//Column Number:8
+                    {
+                        "title": "Action",//Column Number:9
+                        "render": function (data, type, row, meta) {
+                            return '<a class="view" href="#" data-toggle="tooltip" data-placement="top" title="Barcode">'
+                                + '<i class="fas fa-download bg-view-action"></i></a>'
+                                + ' &nbsp;<a class="update" href="#" data-toggle="tooltip" data-placement="top" title="Qrcode">'
+                                + '<i class="fas fa-download bg-edit-action"></i></a>';
+                        }
+                    }
+                ],
+                "drawCallback": function (settings) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+        });
+    </script>
+}

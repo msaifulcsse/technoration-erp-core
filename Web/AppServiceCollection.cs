@@ -25,6 +25,7 @@ namespace Web
             //Registered Applications Custom Interfaces
             services.AddTransient<IDisplayMessageHelper, DisplayMessageHelper>();
             services.AddTransient<IFileUploadHelperService, FileUploadHelperService>();
+            services.AddTransient<IProductCodeGeneratorService, ProductCodeGeneratorService>();
             return services;
         }
     }

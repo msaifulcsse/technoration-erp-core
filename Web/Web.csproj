@@ -45,4 +45,9 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\itemcodes\barcodes\" />
+    <Folder Include="wwwroot\itemcodes\qrcodes\" />
+  </ItemGroup>
+
 </Project>

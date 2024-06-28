@@ -78,13 +78,9 @@ namespace Web
             })
             .AddCookie(options =>
             {
-                options.AccessDeniedPath = "/Home/Index/";
-                options.LoginPath = "/Home/Index";
+                options.AccessDeniedPath = "/Account/Index/";
+                options.LoginPath = "/Account/Index";
             });
-            //services.AddAuthorization(options =>
-            //{
-            //    options.AddPolicy(nameof(Policy.Account),policy => policy.Requirements.Add(new AccountRequirement()));
-            //});
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
@@ -97,7 +93,7 @@ namespace Web
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Error/Error");
                 app.UseHsts();
             }
             app.Use(async (context, next) =>
@@ -105,17 +101,17 @@ namespace Web
                 await next();
                 if (context.Response.StatusCode == 404)
                 {
-                    context.Request.Path = "/Home/PageNotFound";
+                    context.Request.Path = "/Error/PageNotFound";
                     await next();
                 }
                 if (context.Response.StatusCode == 401)
                 {
-                    context.Request.Path = "/Home/UnAuthorizeError";
+                    context.Request.Path = "/Error/UnAuthorizeError";
                     await next();
                 }
                 if (context.Response.StatusCode == 500)
                 {
-                    context.Request.Path = "/Home/InternalServerError";
+                    context.Request.Path = "/Error/InternalServerError";
                     await next();
                 }
             });
@@ -136,7 +132,7 @@ namespace Web
             {
                 endpoints.MapControllerRoute(
                      name: "default",
-                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                     pattern: "{controller=Account}/{action=Index}/{id?}");
             });
             InitializeOrUpdateDatabase(app);
         }

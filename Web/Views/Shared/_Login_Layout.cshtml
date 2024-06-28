@@ -13,38 +13,8 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img style="height:60px" src="~/asset/images/new-logo.png" />
-                </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <div class="pull-right">
-                        <ul class="navbar-nav flex-grow-1">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark nav-link-custom" asp-area="" asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark nav-link-custom" asp-area="" asp-controller="Home" asp-action="ProjectDetails"><i class="fas fa-desktop"></i> Project Details</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark nav-link-custom" asp-area="" asp-controller="Home" asp-action="AboutUs"><i class="fas fa-address-card"></i> About Us</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="pull-right">
-                        <ul class="navbar-nav flex-grow-1 pull-right">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark nav-link-custom" asp-area="" asp-controller="Account" asp-action="Index"><i class="fas fa-user-lock"></i> Login Area</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white mb-5">
+            <div class="container"></div>
         </nav>
     </header>
     <div class="container">
@@ -56,10 +26,10 @@
     <footer class="border-top footer text-muted">
         <div class="container d-flex">
             <div class="w-50">
-                <span>&copy; 2021 - DIU 68th Batch Students</span>
+                <span>&copy; @DateTime.Now.Year - Shetu Industry Company Ltd.</span>
             </div>
             <div class="w-50">
-                <span style="float:right">Design & Developed By ARIF</span>
+                <span style="float:right">Powered By <a href="https://technoration.com" target="_blank">Technoration Limited</a></span>
             </div>
         </div>
     </footer>
