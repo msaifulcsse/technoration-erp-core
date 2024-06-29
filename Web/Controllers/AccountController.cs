@@ -93,7 +93,7 @@ namespace Web.Controllers
         public async Task<IActionResult> LoggedOut()
         {
             await Task.Delay(0);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index");
         }
 
 
