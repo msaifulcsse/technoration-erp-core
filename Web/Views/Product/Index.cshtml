@@ -107,28 +107,71 @@
                     { "data": "unit" },//Column Number:5
                     {
                         "render": function (data, type, row, meta) {
-                            return '<img src="' + row.barcodeImagePath + '" alt="Barcode Image" style="width:50px; height:50px;" />';
+                            return '<img src="'
+                                + row.barcodeImagePath
+                                + '" alt="Barcode Image" style="width:50px; height:50px;" />'
+                                + ' &nbsp;<a href="'
+                                + row.barcodeImagePath
+                                + '" download data-toggle="tooltip" data-placement="top" title="Barcode Download"><i class="fas fa-download bg-info-action"></i></a>';
                         }
                     },//Column Number:6
                     {
                         "render": function (data, type, row, meta) {
-                            return '<img src="' + row.qrcodeImagePath + '" alt="Barcode Image" style="width:50px; height:50px;" />';
+                            return '<img src="'
+                                + row.qrcodeImagePath
+                                + '" alt="Barcode Image" style="width:50px; height:50px;" />'
+                                + ' &nbsp;<a href="'
+                                + row.qrcodeImagePath
+                                + '" download data-toggle="tooltip" data-placement="top" title="Qrcode Download"><i class="fas fa-download bg-info-action"></i></a>';
                         }
                     },//Column Number:7
                     { "data": "creationDate" },//Column Number:8
                     {
                         "title": "Action",//Column Number:9
                         "render": function (data, type, row, meta) {
-                            return '<a class="view" href="#" data-toggle="tooltip" data-placement="top" title="Barcode">'
-                                + '<i class="fas fa-download bg-view-action"></i></a>'
-                                + ' &nbsp;<a class="update" href="#" data-toggle="tooltip" data-placement="top" title="Qrcode">'
-                                + '<i class="fas fa-download bg-edit-action"></i></a>';
+                            return '<a class="update" href="/Product/Edit/' + row.productId + '" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit bg-edit-action"></i></a>'
+                                + ' &nbsp;<span class="delete" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt bg-delete-action"></i></span>';
                         }
                     }
                 ],
                 "drawCallback": function (settings) {
                     $('[data-toggle="tooltip"]').tooltip();
                 }
+            });
+        
+            $(function () {
+                $('#tblProduct tbody').on('click', 'span.delete', function () {
+                    $('#confirmation').modal();
+                    var v = $(this).parent().parent();
+                    var rowData = tblProduct.row(v).data();
+                    id = parseInt(rowData.productId);
+                });
+            });
+
+            $(function () {
+                $('#confirmation').on('click', '.confirmed', function () {
+                    $.get("/Product/DeleteProduct/" + id, function (data) {
+                        if (data.sucMessage != null && data.sucMessage != "") {
+                            Swal.fire({
+                                position: 'top-end', width: 400,
+                                type: 'success',
+                                text: data.sucMessage,
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
+                        } else if (data.errMessage != null && data.errMessage != "") {
+                            Swal.fire({
+                                position: 'top-end', width: 400,
+                                type: 'error',
+                                text: data.errMessage,
+                                showConfirmButton: false,
+                                timer: 5000
+                            });
+                        }
+                        id = 0;
+                        tblProduct.ajax.reload();
+                    });
+                });
             });
         });
     </script>

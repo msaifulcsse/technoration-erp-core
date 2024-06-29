@@ -44,7 +44,7 @@ namespace Web.Controllers
         }
         #endregion
 
-        #region "Student Listing Related Methods"
+        #region "Product Listing Related Methods"
         public async Task<IActionResult> Index()
         {
             _displayMessageHelper.ErrorMessageSetOrGet(this, false);
@@ -72,11 +72,16 @@ namespace Web.Controllers
                 {
                     displayLength = totalLength;
                 }
-                var allUsers = await _db.AppUsers.ToListAsync();
+                var allUsers = await _db.AppUsers.AsQueryable().Select(s => new
+                {
+                    s.UserId,
+                    s.UserName
+                }).ToDictionaryAsync(keySelector: x => x.UserId, elementSelector: y => y.UserName);
 
-                var displayedValues = allResults
+                var displayedValues = (await allResults
                     .OrderBy(o => o.ProductId)
                     .Skip(param.start).Take(displayLength)
+                    .ToArrayAsync())
                     .Select(s => new
                     {
                         productId = s.ProductId,
@@ -90,9 +95,7 @@ namespace Web.Controllers
                         barcodeImagePath = !string.IsNullOrEmpty(s.BarcodeImage) ? s.BarcodeImage : "",
                         qrcodeText = !string.IsNullOrEmpty(s.QrcodeText) ? s.QrcodeText : "",
                         qrcodeImagePath = !string.IsNullOrEmpty(s.QrcodeImage) ? s.QrcodeImage : "",
-                        createdBy = allUsers.Any(f => f.UserId == s.CreatedBy)
-                            ? allUsers.FirstOrDefault(f => f.UserId == s.CreatedBy).UserName
-                            : "",
+                        createdBy = allUsers.ContainsKey(s.CreatedBy ?? 0) ? allUsers[s.CreatedBy ?? 0] : "",
                         creationDate = s.CreatedDate != null ? s.CreatedDate.Value.ToString("dd/MM/yyyy") : ""
                     }).ToList();
 
@@ -168,7 +171,7 @@ namespace Web.Controllers
                     var existingData = await _db.Products.AsQueryable()
                         .Where(f => f.ProductId == model.ProductId)
                         .FirstOrDefaultAsync();
-                    
+
                     if (existingData != null)
                     {
                         existingData.ProductCode = model.ProductCode;
@@ -178,11 +181,11 @@ namespace Web.Controllers
                         existingData.Variant = model.Variant;
                         existingData.Unit = model.Unit;
 
-                        if(existingData.BarcodeNumber != model.BarcodeNumber)
+                        if (existingData.BarcodeNumber != model.BarcodeNumber)
                         {
                             //remove previously generated Barcode
                             _productCodeGeneratorService.RemoveBarcode(existingData.BarcodeImage);
-                                                       
+
                             existingData.BarcodeNumber = model.BarcodeNumber;
                             existingData.BarcodeImage = _productCodeGeneratorService.GenerateBarcode(model.ProductCode, model.BarcodeNumber);
                         }
@@ -194,7 +197,7 @@ namespace Web.Controllers
                             existingData.QrcodeText = model.QRCodeText;
                             existingData.QrcodeImage = _productCodeGeneratorService.GenerateQRCode(model.ProductCode, model.QRCodeText);
                         }
-                       
+
                         existingData.UpdatedBy = userId;
                         existingData.UpdatedDate = currentDateTime;
                         _displayMessageHelper.SuccessMessageSetOrGet(this, true, ConstantUserMessages.PRODUCT_UPDATED);
@@ -233,6 +236,37 @@ namespace Web.Controllers
                 _displayMessageHelper.ErrorMessageSetOrGet(this, true, ConstantUserMessages.MODEL_STATE_INVALID);
             }
             return RedirectToAction("Index");
+        }
+        #endregion
+
+        #region "Product Delete Related Methods"
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            string sucMsg = "";
+            string errMsg = "";
+            if (id > 0)
+            {
+                try
+                {
+                    var existingData = await _db.Products.AsQueryable().Where(f => f.ProductId == id).FirstOrDefaultAsync();
+                    if (existingData != null)
+                    {
+                        //remove previously generated Barcode
+                        _productCodeGeneratorService.RemoveBarcode(existingData.BarcodeImage);
+                        //remove previously generated Qrcode
+                        _productCodeGeneratorService.RemoveQRCode(existingData.QrcodeImage);
+                        _db.Products.Remove(existingData);
+                        await _db.SaveChangesAsync();
+                        sucMsg = ConstantUserMessages.PRODUCT_DELETED;
+                    }
+                    else
+                        errMsg = "Error occurred, no data found with this id!";
+                }
+                catch (Exception ex) { errMsg = ex.Message; }
+            }
+            else
+                errMsg = "Error occurred, required id is missing!";
+            return Json(new { sucMessage = sucMsg, errMessage = errMsg });
         }
         #endregion
     }
