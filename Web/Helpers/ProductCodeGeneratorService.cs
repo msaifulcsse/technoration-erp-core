@@ -48,8 +48,8 @@ namespace Web.Helpers
                         BackColor = SKColors.White,
                         Width = 300,
                         Height = 150,
-                        LabelFont = new SKFont(SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold), 28),
-                        EncodedType = BarcodeStandard.Type.Code128
+                        LabelFont = new SKFont(SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal), 28),
+                        EncodedType = BarcodeStandard.Type.Ean13
                     };
                     var barCodeImage = barCode.Encode(barCodeText);
                     var filePath = Path.Combine(savingPath, fileName);
@@ -88,6 +88,7 @@ namespace Web.Helpers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error on File Deleting: {ex.Message}");
                 return false;
             }
         }
@@ -149,6 +150,7 @@ namespace Web.Helpers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error on File Deleting: {ex.Message}");
                 return false;
             }
         }

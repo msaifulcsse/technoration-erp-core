@@ -19,13 +19,27 @@
                 <div class="form-group">
                     <div class="row">
                         <div class="col">
+                            <label asp-for="Brand">Brand</label>
+                            <input type="text" class="form-control form-padding" asp-for="Brand" placeholder="Ex.Microsoft">
+                            <span asp-validation-for="Brand" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label asp-for="ModelNumber">Model Number</label>
+                            <input type="text" class="form-control form-padding" asp-for="ModelNumber" placeholder="Ex.AbC1234">
+                            <span asp-validation-for="ModelNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
                             <label asp-for="ProductCode">Product Code</label>
-                            <input type="text" class="form-control form-padding" asp-for="ProductCode" placeholder="Product Code" />
+                            <input type="text" class="form-control form-padding" asp-for="ProductCode" placeholder="Ex.123" />
                             <span asp-validation-for="ProductCode" class="text-danger"></span>
                         </div>
                         <div class="col">
                             <label asp-for="ProductName">Product Name</label>
-                            <input type="text" class="form-control form-padding" asp-for="ProductName" placeholder="Product Name">
+                            <input type="text" class="form-control form-padding" asp-for="ProductName" placeholder="Ex.Software">
                             <span asp-validation-for="ProductName" class="text-danger"></span>
                         </div>
                     </div>
@@ -33,38 +47,61 @@
                 <div class="form-group">
                     <div class="row">
                         <div class="col">
-                            <label asp-for="Brand">Brand</label>
-                            <input type="text" class="form-control form-padding" asp-for="Brand" placeholder="Brand">
-                            <span asp-validation-for="Brand" class="text-danger"></span>
-                        </div>
-                        <div class="col">
                             <label asp-for="Size">Size</label>
-                            <input type="text" class="form-control form-padding" asp-for="Size" placeholder="Size">
+                            <input type="text" class="form-control form-padding" asp-for="Size" placeholder="Ex.512mb">
                             <span asp-validation-for="Size" class="text-danger"></span>
                         </div>
                         <div class="col">
                             <label asp-for="Variant">Variant</label>
-                            <input type="text" class="form-control form-padding" asp-for="Variant" placeholder="Variant">
+                            <input type="text" class="form-control form-padding" asp-for="Variant" placeholder="ex.Windows">
                             <span asp-validation-for="Variant" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label asp-for="Unit">Unit</label>
+                            <input type="text" class="form-control form-padding" asp-for="Unit" placeholder="Ex.mb">
+                            <span asp-validation-for="Unit" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="row">
                         <div class="col">
-                            <label asp-for="Unit">Unit</label>
-                            <input type="text" class="form-control form-padding" asp-for="Unit" placeholder="Unit">
-                            <span asp-validation-for="Unit" class="text-danger"></span>
-                        </div>
-                        <div class="col">
                             <label asp-for="BarcodeNumber">Barcode Number</label>
-                            <input type="text" class="form-control form-padding" asp-for="BarcodeNumber" placeholder="Barcode Number">
+                            <input type="text" class="form-control form-padding" asp-for="BarcodeNumber" placeholder="Ex.1234567891234">
                             <span asp-validation-for="BarcodeNumber" class="text-danger"></span>
                         </div>
                         <div class="col">
                             <label asp-for="QRCodeText">QRCode Text</label>
-                            <input type="text" class="form-control form-padding" asp-for="QRCodeText" placeholder="QRCode Text">
+                            <input type="text" class="form-control form-padding" asp-for="QRCodeText" placeholder="Ex. https://test.com/check">
                             <span asp-validation-for="QRCodeText" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label asp-for="ReleaseDate">Release Date</label>
+                            <input type="text" class="form-control form-padding bg-gray" asp-for="ReleaseDate" placeholder="Release Date(DD/MM/YYYY)" readonly>
+                            <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-check-label" for="Description">Product Description</label>
+                            <textarea class="form-control form-padding" asp-for="Description" rows="2"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label" for="ProductStatus">Product Status</label>
+                            <select class="form-control form-padding" asp-for="ProductStatus">
+                                <option value="">Select</option>
+                                <option value="true">Active</option>
+                                <option value="false">InActive</option>
+                            </select>
+                            <span asp-validation-for="ProductStatus" class="text-danger"></span>
+                        </div>
+                        <div class="col">
+                            <label class="form-check-label">Product Image</label><br />
+                            <input type="file" asp-for="ProductImage">
+                            <span asp-validation-for="ProductImage" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
@@ -84,4 +121,20 @@
         </div>
     </div>
 </div>
+@section Scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(function () {
+                $('#ReleaseDate').datepicker({
+                    format: 'dd/mm/yyyy',
+                    todayHighlight: true,
+                    autoclose: true,
+                    orientation: "top left"
+                }).on('changeDate', function (e) {
+                    $('#ReleaseDate input').val(e.date);
+                });
+            });
+        });
+    </script>
 }

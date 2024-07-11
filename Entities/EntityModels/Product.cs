@@ -28,5 +28,10 @@ namespace Entities.EntityModels
 
         public string QrcodeText { get; set; }
         public string QrcodeImage { get; set; }
+
+        public string ModelNumber { get; set; }
+        public string ProductImage { get; set; }
+        public string Description { get; set; }
+        public DateTime? ReleaseDate { get; set; }
     }
 }

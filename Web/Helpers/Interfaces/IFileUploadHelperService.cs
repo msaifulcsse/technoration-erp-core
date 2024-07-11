@@ -9,5 +9,6 @@ namespace Web.Helpers.Interfaces
     public interface IFileUploadHelperService
     {
         string UploadFile(IFormFile file, string directoryName);
+        bool RemoveFile(string fileImgPath, string directoryName);
     }
 }

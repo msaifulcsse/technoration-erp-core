@@ -218,7 +218,7 @@ namespace Web.Controllers
                     var currentDateTime = _dateTimeHelperService.Now();
                     var userId = _cookieHelperService.GetUserIdFromCookie();
                     var existingData = _db.Students.FirstOrDefault(f => f.StudentId == model.StudentId);
-                    string proPicFilePath = _fileUploadHelperService.UploadFile(model.ProfilePicture, "Student");
+                    string proPicFilePath = _fileUploadHelperService.UploadFile(model.ProfilePicture, "student-images");
                     var registrationDate = _dateTimeHelperService.ConvertBDDateStringToDateTimeObject(model.RegistrationDate);
                     if (existingData != null)
                     {
@@ -353,12 +353,16 @@ namespace Web.Controllers
             {
                 try
                 {
-                    var existingData = _db.Students.Where(f => f.StudentId == id).Include("StudentMarks").ToList().FirstOrDefault();
+                    var existingData = _db.Students.Where(f => f.StudentId == id)
+                        .Include("StudentMarks").ToList()
+                        .FirstOrDefault();
                     if (existingData != null)
                     {
                         if (!existingData.StudentMarks.Any())
                         {
                             var data = _db.Students.FirstOrDefault(f => f.StudentId == id);
+                            //remove uploaded student image
+                            _fileUploadHelperService.RemoveFile(data.ProfilePicture, "student-images");
                             _db.Students.Remove(data);
                             await _db.SaveChangesAsync();
                             sucMsg = ConstantUserMessages.STUDENT_DELETED;

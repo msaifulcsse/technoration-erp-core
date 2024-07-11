@@ -24,6 +24,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http.Features;
+using System.Net;
+using MySql.Data.MySqlClient;
 
 namespace Web
 {
@@ -38,7 +40,13 @@ namespace Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ProjectDbContext>(options => options.UseMySql(Configuration.GetConnectionString("projectconnectionstring")));
+            services.AddDbContext<ProjectDbContext>(options =>
+                options.UseMySql(Configuration.GetConnectionString("projectconnectionstring"),
+                    mySqlOptions =>
+                        mySqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 1,
+                            maxRetryDelay: TimeSpan.FromSeconds(30),
+                            errorNumbersToAdd: null)));
 
             #region "Scheduling JOBs Using Quartz"
             var scheduler = StdSchedulerFactory.GetDefaultScheduler().GetAwaiter().GetResult();
@@ -87,6 +95,9 @@ namespace Web
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseMiddleware<InternetConnectionMiddleware>();
+            app.UseMiddleware<DatabaseExceptionHandlingMiddleware>();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -139,13 +150,26 @@ namespace Web
 
         private void InitializeOrUpdateDatabase(IApplicationBuilder app)
         {
-            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            try
             {
-                using (var dbContext = serviceScope.ServiceProvider.GetService<ProjectDbContext>())
+                using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
                 {
-                    DBConfiguration.SeedDefaultRoleUserAndUserRoleData(dbContext);
+                    var dbContext = serviceScope.ServiceProvider.GetRequiredService<ProjectDbContext>();
                     dbContext.Database.Migrate();
+                    DBConfiguration.SeedDefaultRoleUserAndUserRoleData(dbContext);
                 }
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new Exception("A database error occurred. Please try again later.", ex);
+            }
+            catch (MySqlException ex)
+            {
+                throw new Exception("A database error occurred. Please try again later.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred. Please try again later.", ex);
             }
         }
 
@@ -259,6 +283,85 @@ namespace Web
             .WithIdentity(jobMetadata.JobId.ToString())
             .WithDescription($"{jobMetadata.JobName}")
             .Build();
+        }
+    }
+    #endregion
+
+    #region "Internet & Database Connection Exception Handle Middleware"
+    public class InternetConnectionMiddleware
+    {
+        private readonly RequestDelegate _next;
+
+        public InternetConnectionMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            // Avoid redirect loop
+            if (!context.Request.Path.StartsWithSegments("/Error/NoInternet"))
+            {
+                if (!IsInternetAvailable())
+                {
+                    context.Response.Redirect("/Error/NoInternet");
+                    return;
+                }
+            }
+
+            await _next(context);
+        }
+
+        private bool IsInternetAvailable()
+        {
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    client.Proxy = null; // Ensure no proxy is used
+                    client.OpenReadTaskAsync(new Uri("http://www.google.com")).Wait(30000); // Wait for 30 seconds
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+
+    public class DatabaseExceptionHandlingMiddleware
+    {
+        private readonly RequestDelegate _next;
+        private readonly ILogger<DatabaseExceptionHandlingMiddleware> _logger;
+
+        public DatabaseExceptionHandlingMiddleware(RequestDelegate next, ILogger<DatabaseExceptionHandlingMiddleware> logger)
+        {
+            _next = next;
+            _logger = logger;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            try
+            {
+                await _next(context);
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "A database update error occurred.");
+                context.Response.Redirect("/Error/DatabaseError");
+            }
+            catch (MySqlException ex)
+            {
+                _logger.LogError(ex, "A database error occurred.");
+                context.Response.Redirect("/Error/DatabaseError");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred.");
+                context.Response.Redirect("/Error/InternalServerError");
+            }
         }
     }
     #endregion

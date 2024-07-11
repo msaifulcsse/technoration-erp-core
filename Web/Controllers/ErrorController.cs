@@ -16,6 +16,17 @@ namespace Web.Controllers
             return View(new VMErrorViewer { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult NoInternet()
+        {
+            return View(new VMErrorViewer { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult DatabaseError()
+        {
+            return View(new VMErrorViewer { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult PageNotFound()
@@ -23,13 +34,11 @@ namespace Web.Controllers
             return View(new VMErrorViewer { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult UnAuthorizeError()
         {
             return View(new VMErrorViewer { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult InternalServerError()

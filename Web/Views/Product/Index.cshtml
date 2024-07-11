@@ -5,6 +5,31 @@
 
 <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
 <link href="~/css/sweetalert/sweetalert2.min.css" rel="stylesheet" />
+<style type="text/css" rel="stylesheet">
+    .spn-bg-edit-action {
+        background: #28a745;
+        color: #fff;
+        border-radius: 10px;
+        padding: 3px;
+        display: inline-flex;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        align-items: center;
+        flex-direction: row-reverse;
+    }
+
+    .spn-bg-delete-action {
+        background: #bd2130;
+        color: #fff;
+        border-radius: 10px;
+        padding: 3px;
+        display: inline-flex;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        align-items: center;
+        flex-direction: row-reverse;
+    }
+</style>
 <div class="container-fluid">
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -21,6 +46,7 @@
                     <thead>
                         <tr>
                             <th>Code</th>
+                            <th>Photo</th>
                             <th>Name</th>
                             <th>Brand</th>
                             <th>Size</th>
@@ -28,7 +54,8 @@
                             <th>Unit</th>
                             <th>Barcode</th>
                             <th>QRCode</th>
-                            <th>CreatedOn</th>
+                            <th>ReleasedOn</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -100,37 +127,65 @@
                 },
                 "columns": [
                     { "data": "productCode" },//Column Number:0
-                    { "data": "productName" },//Column Number:1
-                    { "data": "brand" },//Column Number:2
-                    { "data": "size" },//Column Number:3
-                    { "data": "variant" },//Column Number:4
-                    { "data": "unit" },//Column Number:5
                     {
                         "render": function (data, type, row, meta) {
                             return '<img src="'
-                                + row.barcodeImagePath
-                                + '" alt="Barcode Image" style="width:50px; height:50px;" />'
-                                + ' &nbsp;<a href="'
-                                + row.barcodeImagePath
-                                + '" download data-toggle="tooltip" data-placement="top" title="Barcode Download"><i class="fas fa-download bg-info-action"></i></a>';
+                                + row.productImageUrl
+                                + '" alt="' + row.productCode + '_Product Image" style="width:70px; height:60px;" />';
                         }
-                    },//Column Number:6
+                    },//Column Number:1
+                    { "data": "productName" },//Column Number:2
+                    { "data": "brand" },//Column Number:3
+                    { "data": "size" },//Column Number:4
+                    { "data": "variant" },//Column Number:5
+                    { "data": "unit" },//Column Number:6
                     {
                         "render": function (data, type, row, meta) {
-                            return '<img src="'
-                                + row.qrcodeImagePath
+                            return '<span style="display:inline-flex;"><img src="'
+                                + row.barcodeImagePath
                                 + '" alt="Barcode Image" style="width:50px; height:50px;" />'
                                 + ' &nbsp;<a href="'
-                                + row.qrcodeImagePath
-                                + '" download data-toggle="tooltip" data-placement="top" title="Qrcode Download"><i class="fas fa-download bg-info-action"></i></a>';
+                                + row.barcodeImagePath
+                                + '" download data-toggle="tooltip" data-placement="top" title="Barcode Download"><i class="fas fa-download bg-info-action"></i></a></span>';
                         }
                     },//Column Number:7
-                    { "data": "creationDate" },//Column Number:8
                     {
-                        "title": "Action",//Column Number:9
                         "render": function (data, type, row, meta) {
+                            return '<span style="display:inline-flex;"><img src="'
+                                + row.qrcodeImagePath
+                                + '" alt="Barcode Image" style="width:50px; height:50px;" />'
+                                + ' &nbsp;<a href="'
+                                + row.qrcodeImagePath
+                                + '" download data-toggle="tooltip" data-placement="top" title="Qrcode Download"><i class="fas fa-download bg-info-action"></i></a></span>';
+                        }
+                    },//Column Number:8
+                    {
+                        "render": function (data, type, row, meta) {
+                            if (row.releaseDate != null && row.releaseDate != "") {
+                                return row.releaseDate;
+                            }
+                            else {
+                                return row.creationDate;
+                            }
+                        }
+                    },//Column Number:9
+                    {
+                        "title": "Status",//Column Number:10
+                        "render": function (data, type, row, meta) {
+                            if (row.productStatus) {
+                                return '<span class="spn-bg-edit-action" data-toggle="tooltip" data-placement="top" title="Active">Active<i class="fas fa-check-circle"></i></span>';
+                            }
+                            else {
+                                return '<span class="spn-bg-delete-action" data-toggle="tooltip" data-placement="top" title="InActive">InActive<i class="fas fa-times-circle"></i></span>';
+                            }
+                        }
+                    },
+                    {
+                        "title": "Action",//Column Number:11
+                        "render": function (data, type, row, meta) {
+                            //return '<a class="update" href="/Product/Edit/' + row.productId + '" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit bg-edit-action"></i></a>'
+                            + ' &nbsp;<span class="delete" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt bg-delete-action"></i></span>';
                             return '<a class="update" href="/Product/Edit/' + row.productId + '" data-toggle="tooltip" data-placement="top" title="Edit"><i class="fas fa-edit bg-edit-action"></i></a>';
-                                //+ ' &nbsp;<span class="delete" data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash-alt bg-delete-action"></i></span>';
                         }
                     }
                 ],
@@ -138,7 +193,7 @@
                     $('[data-toggle="tooltip"]').tooltip();
                 }
             });
-        
+
             $(function () {
                 $('#tblProduct tbody').on('click', 'span.delete', function () {
                     $('#confirmation').modal();

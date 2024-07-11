@@ -203,7 +203,7 @@ namespace Web.Controllers
                     var currentDateTime = _dateTimeHelperService.Now();
                     var userId = _cookieHelperService.GetUserIdFromCookie();
                     var existingData = _db.Employees.FirstOrDefault(f => f.EmployeeId == model.EmployeeId);
-                    string proPicFilePath = _fileUploadHelperService.UploadFile(model.ProfilePicture, "Employee");
+                    string proPicFilePath = _fileUploadHelperService.UploadFile(model.ProfilePicture, "employee-images");
                     var joiningDate = _dateTimeHelperService.ConvertBDDateStringToDateTimeObject(model.JoiningDate);
                     if (existingData != null)
                     {
@@ -402,6 +402,8 @@ namespace Web.Controllers
                         var empUserInfo = _db.AppUsers.FirstOrDefault(f => f.UserType == (int)ApplicationRoles.Employee && f.ReferenceId == existingData.EmployeeId);
                         if (empUserInfo != null)
                         {
+                            //remove uploaded employee image
+                            _fileUploadHelperService.RemoveFile(existingData.ProfilePicture, "employee-images");
                             _db.AppUsers.Remove(empUserInfo);
                         }
                         _db.Employees.Remove(existingData);

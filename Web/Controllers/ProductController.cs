@@ -79,12 +79,14 @@ namespace Web.Controllers
                 }).ToDictionaryAsync(keySelector: x => x.UserId, elementSelector: y => y.UserName);
 
                 var displayedValues = (await allResults
-                    .OrderBy(o => o.ProductId)
+                    .OrderByDescending(o => o.ProductId)
                     .Skip(param.start).Take(displayLength)
                     .ToArrayAsync())
                     .Select(s => new
                     {
                         productId = s.ProductId,
+                        productStatus = s.IsActive != null ? s.IsActive : true,
+                        modelNumber = !string.IsNullOrEmpty(s.ModelNumber) ? s.ModelNumber : "",
                         productCode = !string.IsNullOrEmpty(s.ProductCode) ? s.ProductCode : "",
                         productName = !string.IsNullOrEmpty(s.ProductName) ? s.ProductName : "",
                         brand = s.Brand,
@@ -95,6 +97,9 @@ namespace Web.Controllers
                         barcodeImagePath = !string.IsNullOrEmpty(s.BarcodeImage) ? s.BarcodeImage : "",
                         qrcodeText = !string.IsNullOrEmpty(s.QrcodeText) ? s.QrcodeText : "",
                         qrcodeImagePath = !string.IsNullOrEmpty(s.QrcodeImage) ? s.QrcodeImage : "",
+                        releaseDate = s.ReleaseDate != null ? s.ReleaseDate.Value.ToString("dd/MM/yyyy") : "",
+                        description = !string.IsNullOrEmpty(s.Description) ? s.Description : "",
+                        productImageUrl = !string.IsNullOrEmpty(s.ProductImage) ? s.ProductImage : "",
                         createdBy = allUsers.ContainsKey(s.CreatedBy ?? 0) ? allUsers[s.CreatedBy ?? 0] : "",
                         creationDate = s.CreatedDate != null ? s.CreatedDate.Value.ToString("dd/MM/yyyy") : ""
                     }).ToList();
@@ -148,6 +153,10 @@ namespace Web.Controllers
                         vmProductData.Unit = productInfo.Unit;
                         vmProductData.BarcodeNumber = productInfo.BarcodeNumber;
                         vmProductData.QRCodeText = productInfo.QrcodeText;
+                        vmProductData.ModelNumber = productInfo.ModelNumber;
+                        vmProductData.Description = productInfo.Description;
+                        vmProductData.ProductStatus = productInfo.IsActive;
+                        vmProductData.ReleaseDate = productInfo.ReleaseDate != null ? productInfo.ReleaseDate.Value.ToString("dd/MM/yyyy") : "";
                     }
                 }
             }
@@ -171,6 +180,8 @@ namespace Web.Controllers
                     var existingData = await _db.Products.AsQueryable()
                         .Where(f => f.ProductId == model.ProductId)
                         .FirstOrDefaultAsync();
+                    string productImgPath = _fileUploadHelperService.UploadFile(model.ProductImage, "product-images");
+                    var releaseDate = _dateTimeHelperService.ConvertBDDateStringToDateTimeObject(model.ReleaseDate);
 
                     if (existingData != null)
                     {
@@ -186,24 +197,41 @@ namespace Web.Controllers
                             //remove previously generated Barcode
                             _productCodeGeneratorService.RemoveBarcode(existingData.BarcodeImage);
 
-                            existingData.BarcodeNumber = model.BarcodeNumber;
-                            existingData.BarcodeImage = _productCodeGeneratorService.GenerateBarcode(model.ProductCode, model.BarcodeNumber);
+                            var newBarCodeImgPath = _productCodeGeneratorService.GenerateBarcode(model.ProductCode, model.BarcodeNumber);
+                            if (!string.IsNullOrEmpty(newBarCodeImgPath))
+                            {
+                                existingData.BarcodeNumber = model.BarcodeNumber;
+                                existingData.BarcodeImage = newBarCodeImgPath;
+                            }
                         }
                         if (!string.IsNullOrEmpty(model.QRCodeText) && existingData.QrcodeText != model.QRCodeText)
                         {
                             //remove previously generated Qrcode
                             _productCodeGeneratorService.RemoveQRCode(existingData.QrcodeImage);
 
-                            existingData.QrcodeText = model.QRCodeText;
-                            existingData.QrcodeImage = _productCodeGeneratorService.GenerateQRCode(model.ProductCode, model.QRCodeText);
+                            var newQRCodeImgPath = _productCodeGeneratorService.GenerateQRCode(model.ProductCode, model.QRCodeText);
+                            if (!string.IsNullOrEmpty(newQRCodeImgPath))
+                            {
+                                existingData.QrcodeText = model.QRCodeText;
+                                existingData.QrcodeImage = newQRCodeImgPath;
+                            }
                         }
 
+                        existingData.ModelNumber = model.ModelNumber;
+                        existingData.Description = model.Description;
+                        existingData.IsActive = model.ProductStatus;
+                        if (!string.IsNullOrEmpty(releaseDate))
+                            existingData.ReleaseDate = Convert.ToDateTime(releaseDate);
+                        if (!string.IsNullOrEmpty(productImgPath))
+                            existingData.ProductImage = productImgPath;
                         existingData.UpdatedBy = userId;
                         existingData.UpdatedDate = currentDateTime;
                         _displayMessageHelper.SuccessMessageSetOrGet(this, true, ConstantUserMessages.PRODUCT_UPDATED);
                     }
                     else
                     {
+                        var barCodeImgPath = _productCodeGeneratorService.GenerateBarcode(model.ProductCode, model.BarcodeNumber);
+                        var qrCodeImgPath = _productCodeGeneratorService.GenerateQRCode(model.ProductCode, model.QRCodeText);
                         var newData = new Product
                         {
                             ProductCode = model.ProductCode,
@@ -212,10 +240,15 @@ namespace Web.Controllers
                             Size = model.Size,
                             Variant = model.Variant,
                             Unit = model.Unit,
-                            BarcodeNumber = model.BarcodeNumber,
-                            BarcodeImage = _productCodeGeneratorService.GenerateBarcode(model.ProductCode, model.BarcodeNumber),
-                            QrcodeText = model.QRCodeText,
-                            QrcodeImage = _productCodeGeneratorService.GenerateQRCode(model.ProductCode, model.QRCodeText),
+                            BarcodeNumber = !string.IsNullOrEmpty(barCodeImgPath) ? model.BarcodeNumber : "",
+                            BarcodeImage = barCodeImgPath,
+                            QrcodeText = !string.IsNullOrEmpty(qrCodeImgPath) ? model.QRCodeText : "",
+                            QrcodeImage = qrCodeImgPath,
+                            ModelNumber = model.ModelNumber,
+                            Description = model.Description,
+                            IsActive = model.ProductStatus,
+                            ReleaseDate = !string.IsNullOrEmpty(releaseDate) ? Convert.ToDateTime(releaseDate) : null,
+                            ProductImage = !string.IsNullOrEmpty(productImgPath) ? productImgPath : null,
                             CreatedBy = userId,
                             CreatedDate = currentDateTime,
                             UpdatedBy = userId,
@@ -251,10 +284,12 @@ namespace Web.Controllers
                     var existingData = await _db.Products.AsQueryable().Where(f => f.ProductId == id).FirstOrDefaultAsync();
                     if (existingData != null)
                     {
-                        //remove previously generated Barcode
+                        //remove generated Barcode Image
                         _productCodeGeneratorService.RemoveBarcode(existingData.BarcodeImage);
-                        //remove previously generated Qrcode
+                        //remove generated Qrcode Image
                         _productCodeGeneratorService.RemoveQRCode(existingData.QrcodeImage);
+                        //remove uploaded product image
+                        _fileUploadHelperService.RemoveFile(existingData.ProductImage, "product-images");
                         _db.Products.Remove(existingData);
                         await _db.SaveChangesAsync();
                         sucMsg = ConstantUserMessages.PRODUCT_DELETED;

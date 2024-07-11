@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Web.Helpers.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Web.Helpers
 {
@@ -27,34 +26,51 @@ namespace Web.Helpers
             {
                 if (file != null && file.Length > 0)
                 {
-                    string fileName = "";
-                    string savingPath = (_env.WebRootPath + "\\uploads\\" + directoryName + "\\" + DateTime.Now.ToString("yyyy-MM-dd") + "\\").Trim();
+                    string fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                    string extension = Path.GetExtension(file.FileName);
+                    fileName = $"{fileNameInGuid}-{fileName.Trim()}{extension}";
+                    string savingPath = Path.Combine(_env.WebRootPath, "uploads", directoryName);
 
                     if (!Directory.Exists(savingPath))
                     {
                         Directory.CreateDirectory(savingPath);
                     }
-                    //Use Namespace called :  System.IO  
-                    fileName = Path.GetFileNameWithoutExtension(file.FileName);
-                    //To Get File Extension  
-                    string extension = Path.GetExtension(file.FileName);
-                    //Add Current Date To Attached File Name  
-                    fileName = fileNameInGuid.ToString() + "-" + fileName.Trim() + extension;
 
-                    savingPath = savingPath + fileName;
-                    using (var fileSteam = new FileStream(savingPath, FileMode.Create))
+                    var filePath = Path.Combine(savingPath, fileName);
+                    using (var fileSteam = new FileStream(filePath, FileMode.Create))
                     {
                         file.CopyTo(fileSteam);
                     }
-                    returnPath = "/uploads/" + directoryName + "/" + DateTime.Now.ToString("yyyy-MM-dd") + "/" + fileName;
+                    returnPath = $"/uploads/{directoryName}/{fileName}";
                 }
-                return returnPath;
             }
             catch (Exception ex)
             {
-                string message = ex.Message.ToString();
-                throw;
+                Console.WriteLine($"Error on File Uploading: {ex.Message}");
+                returnPath = "";
+            }
+            return returnPath;
+        }
+
+        public bool RemoveFile(string fileImgPath, string directoryName)
+        {
+            try
+            {
+                var fileName = Path.GetFileName(fileImgPath);
+                var fullImgPath = Path.Combine(_env.WebRootPath, "uploads", directoryName, fileName);
+                if (!File.Exists(fullImgPath))
+                {
+                    return false;
+                }
+
+                File.Delete(fullImgPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error on File Deleting: {ex.Message}");
+                return false;
             }
         }
-    }
-}
+    }//End of the class
+}//End of the namespace

@@ -42,5 +42,19 @@ namespace Entities.ViewModels
         [StringLength(100)]
         [Required(ErrorMessage = "Provide the product Qrcode Text")]
         public string QRCodeText { get; set; }
+
+        [StringLength(50, ErrorMessage = "Maximum model number limit is 50 characters")]
+        public string ModelNumber { get; set; }
+
+        public IFormFile ProductImage { get; set; }
+
+        [StringLength(5000, ErrorMessage = "Maximum description limit is 5000 characters")]
+        public string Description { get; set; }
+
+        [StringLength(10, ErrorMessage = "Release date string is allowed within 10 characters")]
+        public string ReleaseDate { get; set; }
+
+        [Required(ErrorMessage = "Please select a product status")]
+        public bool? ProductStatus { get; set; }
     }
 }
